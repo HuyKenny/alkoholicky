@@ -1,12 +1,12 @@
 ---
 // Footer: legal pages and main categories hard-coded (must not depend on menu edits), affiliate disclosure, 18+.
-import logo from '../data/logo.svg?raw';
+import Logo from './Logo.astro';
 const year = new Date().getFullYear();
 ---
 <footer class="pa-t">
 	<div class="w pa-t__in">
 		<div>
-			<a class="logo" href="/" aria-label="Alkoholický.cz" set:html={logo} />
+			<Logo />
 			<p>Nezávislý srovnávač cen alkoholu. Porovnáváme nabídky více než 20 ověřených českých e-shopů, ceny aktualizujeme každý den.</p>
 			<p><span class="b18">18+</span>Alkohol je určen pouze osobám starším 18 let. Pijte s mírou.</p>
 		</div>

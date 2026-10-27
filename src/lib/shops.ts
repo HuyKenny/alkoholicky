@@ -10,6 +10,14 @@ const NAMES: Record<string, string> = {
   'familium.cz': 'Familium', 'bestdrink.cz': 'Bestdrink',
 };
 export const shopName = (domain: string) => NAMES[domain] ?? domain;
+/** Brand colour of a shop (stripe on the homepage shop tiles); unknown shops get the site green. */
+const COLORS: Record<string, string> = {
+  'alkohol.cz': '#B3122E', 'drinkcentrum.cz': '#E30613', 'svetnapoju.cz': '#00A0E3', 'topalkohol.cz': '#1D1D1B', 'vinisto.cz': '#7A1F3D',
+  'vinokral.cz': '#8E1B3C', 'barman.cz': '#C8102E', 'ocenenavina.cz': '#B08D57', 'warehouse1.cz': '#1F1F1F', 'dramroom.cz': '#C49A3A',
+  'lihovarek.cz': '#2F6B3A', 'osobnivinoteka.cz': '#6B2142', 'panalfred.cz': '#0E2A47', 'wineplanet.cz': '#5B2A86', 'simplywines.cz': '#D4145A',
+  'donpealo.cz': '#E2001A', 'destilerka.cz': '#A0522D', '4bar.cz': '#F39200', 'alza.cz': '#21A1E1', 'rohlik.cz': '#5DA130',
+};
+export const shopColor = (domain: string) => COLORS[domain] ?? '#0F4D3A';
 export const shopIcon = (domain: string) => `/wp-content/uploads/ce-logos/icon_${domain.replace(/\./g, '-')}.png`;
 
 /** Full logo with a display size of similar visual weight (width grows with √ aspect ratio), or null. */

@@ -17,6 +17,8 @@ const TILE_FIRST = 12;
 interface Props {
 	crumbs: Array<{ name: string; url?: string }>;
 	h1: string;
+	/** category illustration next to the H1 (lib/ikony.ts) */
+	icon?: string | null | undefined;
 	introHtml?: string | undefined;
 	tiles?: Array<{ slug: string; name: string; count: number; img?: string | undefined }> | undefined;
 	tilesTitle?: string | undefined;
@@ -25,7 +27,7 @@ interface Props {
 	landings?: Record<string, string> | undefined;
 	items: Card[]; total: number; page: number; pages: number; base: string; qs: string; empty?: string | undefined;
 }
-const { crumbs, h1, introHtml, tiles = [], tilesTitle = 'Podkategorie', links, f, fc, brands, cats, landings, items, total, page, pages, base, qs, empty = 'Tady zatím nic není.' } = Astro.props;
+const { crumbs, h1, icon, introHtml, tiles = [], tilesTitle = 'Podkategorie', links, f, fc, brands, cats, landings, items, total, page, pages, base, qs, empty = 'Tady zatím nic není.' } = Astro.props;
 // active filters as removable chips
 const chips: Array<[string, string]> = [];
 const url = (s: FilterState) => base + toQuery(s);
@@ -43,7 +45,7 @@ const plain = withFilter(f, { min: undefined, max: undefined, znacka: [], obchod
 ---
 <div class="w">
 	<Drobky items={crumbs} />
-	<div class="lh"><h1>{h1}</h1><span class="lh__n">{cislo(total)} {produktu(total)}</span></div>
+	<div class="lh"><h1>{icon && <img class="lh__ik" src={icon} alt="" width="64" height="64" />}{h1}</h1><span class="lh__n">{cislo(total)} {produktu(total)}</span></div>
 	{introHtml && (stripTags(introHtml).length > 260 ? <><div class="intro je-zav" set:html={introHtml} /><button type="button" class="vice" aria-expanded="false" data-vice>Zobrazit více</button></> : <div class="intro" set:html={introHtml} />)}
 	{tiles.length > 0 && (
 		<nav class="podk" aria-label={tilesTitle}>

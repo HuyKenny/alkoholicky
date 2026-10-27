@@ -8,8 +8,8 @@ import Karta from '../Karta.astro';
 import PostKarta from '../PostKarta.astro';
 import type { homeView } from '../../lib/views';
 import { cislo, decode } from '../../lib/format';
-import { picture } from '../../lib/img';
-import { shopIcon, shopLogo, shopName } from '../../lib/shops';
+import { ikona } from '../../lib/ikony';
+import { shopColor, shopIcon, shopLogo, shopName } from '../../lib/shops';
 import { BASE, OG_HOME } from '../../lib/site';
 import { robots } from '../../lib/seo';
 
@@ -18,12 +18,12 @@ const { v } = Astro.props;
 // title, description, H1, the SEO text and the FAQ (FAQPage = the page node) are the texts Google knows from WordPress
 const title = 'Alkohol — srovnání cen z 20+ e-shopů | Alkoholický';
 const description = 'Alkohol na jednom místě: srovnáme ceny whisky, rumu, ginu i vína z více než 20 e-shopů. Najděte alkohol v akci a kupte ho za nejlepší cenu.';
-const TILES: Array<[string, string]> = [
-	['whisky-a-ochucene-whisky', 'Whisky'], ['rumy-a-ochucene-rumy', 'Rum'], ['giny', 'Gin'], ['vodky-a-ochucene-vodky', 'Vodka'],
-	['likery', 'Likéry'], ['konaky', 'Koňak'], ['tequily', 'Tequila'], ['vina', 'Víno'],
-	['sumiva-a-perliva-vina', 'Šumivá vína'], ['prosecco', 'Prosecco'], ['miniatury-alkoholu', 'Miniatury'], ['nealko', 'Nealko'],
+const TILES: Array<[string, string, string]> = [
+	['whisky-a-ochucene-whisky', 'Whisky', 'whisky'], ['rumy-a-ochucene-rumy', 'Rum', 'rum'], ['giny', 'Gin', 'gin'], ['vodky-a-ochucene-vodky', 'Vodka', 'vodka'],
+	['likery', 'Likéry', 'likery'], ['konaky', 'Koňak', 'konak'], ['tequily', 'Tequila', 'tequila'], ['vina', 'Víno', 'vino'],
+	['sumiva-a-perliva-vina', 'Šumivá vína', 'sumive'], ['piva', 'Pivo', 'pivo'], ['miniatury-alkoholu', 'Miniatury', 'miniatury'], ['nealko', 'Nealko', 'nealko'],
 ];
-const tiles = TILES.map(([slug, label]) => { const c = v.tree.bySlug.get(slug); return c && c.count_total > 0 ? { slug, label, count: c.count_total, img: v.imgs[String(c.id)] } : null; }).filter((x): x is NonNullable<typeof x> => !!x);
+const tiles = TILES.map(([slug, label, ik]) => { const c = v.tree.bySlug.get(slug); return c && c.count_total > 0 ? { slug, label, count: c.count_total, img: ikona(ik) } : null; }).filter((x): x is NonNullable<typeof x> => !!x);
 const POPULAR: Array<[string, string]> = [['/znacka/jagermeister/', 'Jägermeister'], ['/whisky-a-ochucene-whisky/', 'whisky'], ['/znacka/becherovka/', 'Becherovka'], ['/rumy-a-ochucene-rumy/', 'rum'], ['/znacka/karloff-tatratea-tatransky-caj/', 'Tatranský čaj'], ['/giny/', 'gin'], ['/alkohol-kalkulacka/', 'alkohol kalkulačka']];
 const popular = POPULAR.filter(([u]) => !u.startsWith('/znacka/') || v.brands.bySlug.has(u.split('/')[2]!));
 const brands = v.home.brands.map(([id, n]) => { const b = v.brands.byId.get(id); return b ? { slug: b.slug, name: decode(b.name), n } : null; }).filter((x): x is NonNullable<typeof x> => !!x).slice(0, 12);
@@ -47,7 +47,8 @@ const jsonLd: unknown[] = [];
 <Base title={title} description={description} canonical={BASE + '/'} robots={robots(false)} ogType="website" ogImage={OG_HOME} graph={graph} jsonLd={jsonLd} pageType="home" searchAction={true}>
 	<section class="hero">
 		<div class="w">
-			<h1>Alkohol za nejlepší ceny na jednom místě</h1>
+			<div>
+			<h1>Alkohol za <em>nejlepší ceny</em> na jednom místě</h1>
 			<p class="hero__l">Srovnáváme ceny whisky, rumu, ginu, vína a dalšího alkoholu z více než 20 ověřených e-shopů. Najděte, kde stejnou lahev koupíte nejlevněji.</p>
 			<div class="hs">
 				<form class="hs__f" role="search" method="get" action="/" autocomplete="off">
@@ -65,34 +66,37 @@ const jsonLd: unknown[] = [];
 				<li><b class="num">{shops.length}</b> obchodů</li>
 				<li>ceny aktualizujeme <b>každý den</b></li>
 			</ul>
+			</div>
+			<img class="hero__img" src="/a/regal.webp" alt="" width="1600" height="1169" fetchpriority="high" decoding="async" />
+			<span class="hero__pozn">↙ ceny z regálů 20+ e-shopů</span>
 		</div>
 	</section>
 
 	<div class="w">
 		<section class="sek" id="kategorie" aria-labelledby="h-kat">
-			<div class="sek__h"><h2 id="h-kat">Kategorie</h2></div>
+			<div class="sek__h"><h2 id="h-kat">Co dnes hledáte?</h2></div>
 			<ul class="kt">
-				{tiles.map((t, i) => { const im = picture(t.img, 160); return <li><a href={`/${t.slug}/`}>{im ? <img src={im.src} srcset={im.srcset} alt="" width="84" height="84" loading={i < 6 ? 'eager' : 'lazy'} decoding="async" /> : <span class="kt__x" />}<b>{t.label}</b><small>{cislo(t.count)} produktů</small></a></li>; })}
+				{tiles.map((t, i) => <li><a href={`/${t.slug}/`}><img src={t.img} alt="" width="92" height="92" loading={i < 6 ? 'eager' : 'lazy'} decoding="async" /><b>{t.label}</b><small>{cislo(t.count)} produktů</small></a></li>)}
 			</ul>
 		</section>
 
 		{v.deals.length > 0 && (
 			<section class="sek" aria-labelledby="h-sl">
-				<div class="sek__h"><h2 id="h-sl">Největší slevy dnes</h2><a href="/lihoviny/?orderby=disc" rel="nofollow">Další slevy</a></div>
+				<div class="sek__h"><h2 id="h-sl"><img src={ikona('akce')} alt="" width="44" height="44" loading="lazy" />Největší slevy dnes</h2><a href="/lihoviny/?orderby=disc" rel="nofollow">Další slevy</a></div>
 				<ul class="g g--6 sc">{v.deals.slice(0, 12).map((p) => <Karta p={p} />)}</ul>
 			</section>
 		)}
 
 		{v.popular.length > 0 && (
 			<section class="sek" aria-labelledby="h-pop">
-				<div class="sek__h"><h2 id="h-pop">Nejoblíbenější produkty</h2></div>
+				<div class="sek__h"><h2 id="h-pop"><img src={ikona('prippitek')} alt="" width="44" height="44" loading="lazy" />Nejoblíbenější lahve</h2></div>
 				<ul class="g g--6">{v.popular.slice(0, 12).map((p) => <Karta p={p} />)}</ul>
 			</section>
 		)}
 
 		{brands.length > 0 && (
 			<section class="sek" aria-labelledby="h-zn">
-				<div class="sek__h"><h2 id="h-zn">Oblíbené značky</h2></div>
+				<div class="sek__h"><h2 id="h-zn"><img src={ikona('sud')} alt="" width="44" height="44" loading="lazy" />Oblíbené značky</h2></div>
 				<ul class="zn">{brands.map((b) => <li><a href={`/znacka/${b.slug}/`}>{b.name}<small>{cislo(b.n)}</small></a></li>)}</ul>
 			</section>
 		)}
@@ -100,17 +104,17 @@ const jsonLd: unknown[] = [];
 		<section class="sek" aria-labelledby="h-jak">
 			<div class="sek__h"><h2 id="h-jak">Jak srovnáváme ceny</h2></div>
 			<ol class="jak">
-				<li><h3>Sbíráme nabídky</h3><p>Každou noc načteme aktuální ceny a dostupnost z ověřených českých e-shopů s alkoholem.</p></li>
-				<li><h3>Párujeme stejné lahve</h3><p>Stejnou lahev od různých prodejců spojíme podle kódu EAN, takže vidíte všechny ceny vedle sebe i vývoj ceny v čase.</p></li>
-				<li><h3>Vy vyberete nejlevnější</h3><p>Kliknutím přejdete přímo do obchodu. Cena je stejná jako u prodejce, nic nepřiplácíte.</p></li>
+				<li><img src={ikona('cenovka')} alt="" width="64" height="64" loading="lazy" /><h3>Sbíráme nabídky</h3><p>Každou noc načteme aktuální ceny a dostupnost z ověřených českých e-shopů s alkoholem.</p></li>
+				<li><img src={ikona('whisky')} alt="" width="64" height="64" loading="lazy" /><h3>Párujeme stejné lahve</h3><p>Stejnou lahev od různých prodejců spojíme podle kódu EAN, takže vidíte všechny ceny vedle sebe i vývoj ceny v čase.</p></li>
+				<li><img src={ikona('doprava')} alt="" width="64" height="64" loading="lazy" /><h3>Vy vyberete nejlevnější</h3><p>Kliknutím přejdete přímo do obchodu. Cena je stejná jako u prodejce, nic nepřiplácíte.</p></li>
 			</ol>
 		</section>
 
 		{shops.length > 0 && (
 			<section class="sek" aria-labelledby="h-ob">
-				<div class="sek__h"><h2 id="h-ob">Obchody, které porovnáváme</h2></div>
+				<div class="sek__h"><h2 id="h-ob"><img src={ikona('doprava')} alt="" width="44" height="44" loading="lazy" />Obchody, které porovnáváme</h2></div>
 				<ul class="ob">{shops.map(([d, n]) => { const l = shopLogo(d); return (
-					<li>
+					<li style={`--ob:${shopColor(d)}`}>
 						<span class="ob__l">{l ? <img src={l.src} alt={shopName(d)} width={l.w} height={l.h} loading="lazy" decoding="async" /> : <><img src={shopIcon(d)} alt="" width="24" height="24" loading="lazy" decoding="async" /><b>{shopName(d)}</b></>}</span>
 						<small>{cislo(n)} produktů</small>
 					</li>
@@ -120,7 +124,7 @@ const jsonLd: unknown[] = [];
 
 		{v.mag.length > 0 && (
 			<section class="sek" aria-labelledby="h-mag">
-				<div class="sek__h"><h2 id="h-mag">Rádce a magazín</h2><a href="/blog/">Všechny články</a></div>
+				<div class="sek__h"><h2 id="h-mag"><img src={ikona('magazin')} alt="" width="44" height="44" loading="lazy" />Rádce a magazín</h2><a href="/blog/">Všechny články</a></div>
 				<ul class="pc pc--4">{v.mag.map((p) => <PostKarta p={p} h="h3" perex={false} />)}</ul>
 			</section>
 		)}

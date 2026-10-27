@@ -1,0 +1,6 @@
+---
+// Logo: the Canva bottle-with-price-tag mark + the wordmark set in Bricolage (header and footer).
+interface Props { label?: string }
+const { label = 'Alkoholický.cz' } = Astro.props;
+---
+<a class="logo" href="/" aria-label={label}><img src="/a/logo-mark.webp" alt="" width="38" height="38" /><b>alkoholick<i>ý</i></b></a>

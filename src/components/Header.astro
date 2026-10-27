@@ -3,20 +3,23 @@
 // suggestions (/api/suggest, src/scripts/ui.ts) and a row of the main categories. Menu = data/menu.json (27. 10. 2026:
 // the WordPress main menu, scripts/migrate-from-wp.py; a group with url '' has no link).
 import Ik from './Ik.astro';
-import logo from '../data/logo.svg?raw';
+import Logo from './Logo.astro';
+import { catIcon, ikona } from '../lib/ikony';
 import menu from '../data/menu.json';
 
 interface Item { id: number; parent: number; title: string; url: string; order: number }
 const items = (menu as Item[]).slice().sort((a, b) => a.order - b.order);
 const tree = items.filter((i) => i.parent === 0).map((i) => ({ it: i, kids: items.filter((k) => k.parent === i.id) }));
-const QUICK: Array<[string, string]> = [
-	['/whisky-a-ochucene-whisky/', 'Whisky'], ['/rumy-a-ochucene-rumy/', 'Rum'], ['/giny/', 'Gin'], ['/vodky-a-ochucene-vodky/', 'Vodka'],
-	['/likery/', 'Likéry'], ['/konaky/', 'Koňak'], ['/tequily/', 'Tequila'], ['/vina/', 'Víno'], ['/prosecco/', 'Prosecco'],
-	['/miniatury-alkoholu/', 'Miniatury'], ['/alkohol-kalkulacka/', 'Kalkulačka'], ['/blog/', 'Magazín'],
+const QUICK: Array<[string, string, string]> = [
+	['/whisky-a-ochucene-whisky/', 'Whisky', 'whisky'], ['/rumy-a-ochucene-rumy/', 'Rum', 'rum'], ['/giny/', 'Gin', 'gin'], ['/vodky-a-ochucene-vodky/', 'Vodka', 'vodka'],
+	['/likery/', 'Likéry', 'likery'], ['/konaky/', 'Koňak', 'konak'], ['/tequily/', 'Tequila', 'tequila'], ['/vina/', 'Víno', 'vino'],
+	['/sumiva-a-perliva-vina/', 'Bublinky', 'sumive'], ['/piva/', 'Pivo', 'pivo'], ['/miniatury-alkoholu/', 'Miniatury', 'miniatury'], ['/nealko/', 'Nealko', 'nealko'],
+	['/darkova-baleni-alkoholu/', 'Dárky', 'darky'],
 ];
 const q = (Astro.url.searchParams.get('s') ?? '').trim().toLowerCase();
 ---
 <a class="skip" href="#obsah">Přeskočit na obsah</a>
+<div class="usp"><ul><li>Srovnáváme 20+ e-shopů s alkoholem</li><li>Ceny aktualizujeme každý den</li><li>Kupujete přímo u obchodu, za stejnou cenu</li><li>Jen pro 18+</li></ul></div>
 <header class="hl">
 	<div class="w hl__in">
 		<details class="mm">
@@ -26,7 +29,7 @@ const q = (Astro.url.searchParams.get('s') ?? '').trim().toLowerCase();
 				<div class="mm__g">
 					{tree.map((n) => (
 						<div class="mm__sk">
-							{n.it.url ? <a href={n.it.url}>{n.it.title}</a> : <b>{n.it.title}</b>}
+							{n.it.url ? <a href={n.it.url}>{catIcon(n.it.url.replace(/\//g, '')) && <img src={catIcon(n.it.url.replace(/\//g, ''))!} alt="" width="30" height="30" loading="lazy" />}{n.it.title.replace(/^[^\p{L}]+/u, '')}</a> : <b>{n.it.title}</b>}
 							{n.kids.length > 0 && <ul>{n.kids.map((k) => <li><a href={k.url}>{k.title}</a></li>)}</ul>}
 						</div>
 					))}
@@ -34,7 +37,7 @@ const q = (Astro.url.searchParams.get('s') ?? '').trim().toLowerCase();
 				</div>
 			</nav>
 		</details>
-		<a class="logo" href="/" aria-label="Alkoholický.cz — srovnání cen alkoholu" set:html={logo} />
+		<Logo label="Alkoholický.cz — srovnání cen alkoholu" />
 		<div class="hs">
 			<form class="hs__f" role="search" method="get" action="/" autocomplete="off">
 				<label class="vh" for="hs-q">Hledat produkt, značku nebo kategorii</label>
@@ -45,10 +48,12 @@ const q = (Astro.url.searchParams.get('s') ?? '').trim().toLowerCase();
 			<div class="hs__s" id="hs-s" role="listbox" hidden></div>
 		</div>
 		<div class="hl__akce">
-			<a class="hl__a" href="/blog/"><Ik id="mrizka" /><span>Magazín</span></a>
+			<a class="hl__a" href="/lihoviny/?orderby=disc" rel="nofollow"><img src={ikona('akce')} alt="" width="28" height="28" /><span>Akce</span></a>
+			<a class="hl__a" href="/alkohol-kalkulacka/"><img src={ikona('kalkulacka')} alt="" width="28" height="28" /><span>Kalkulačka</span></a>
+			<a class="hl__a" href="/blog/"><img src={ikona('magazin')} alt="" width="28" height="28" /><span>Magazín</span></a>
 		</div>
 	</div>
 	<nav class="kn" aria-label="Hlavní kategorie">
-		<ul>{QUICK.map(([u, t]) => <li><a href={u}>{t}</a></li>)}</ul>
+		<ul>{QUICK.map(([u, t, i]) => <li><a href={u}><img src={ikona(i)} alt="" width="40" height="40" />{t}</a></li>)}</ul>
 	</nav>
 </header>
