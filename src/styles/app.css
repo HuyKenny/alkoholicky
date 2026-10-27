@@ -47,7 +47,7 @@ p { margin: 0 0 1em; }
 @media (min-width: 900px) { .hl { position: sticky; top: 0; } }
 .hl__in { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px 14px; padding-top: 10px; padding-bottom: 10px; }
 .logo { display: inline-flex; color: var(--ink); padding: 6px 0; }
-.logo svg { width: 92px; height: auto; }
+.logo svg { width: 150px; height: auto; }
 .hl__akce { display: flex; align-items: center; gap: 4px; }
 .hl__a { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: var(--r); font-size: .93rem; font-weight: 550; color: var(--ink2); }
 .hl__a:hover { background: var(--bg2); color: var(--ink); }
@@ -90,7 +90,7 @@ p { margin: 0 0 1em; }
 .kn a:hover { color: var(--ink); border-bottom-color: var(--c); }
 @media (min-width: 900px) {
 	.hl__in { grid-template-columns: auto auto 1fr auto; gap: 18px; padding-top: 12px; padding-bottom: 12px; }
-	.logo svg { width: 104px; }
+	.logo svg { width: 168px; }
 	.hl__in > .logo { order: -1; }
 	.hs { grid-column: auto; order: 0; max-width: 720px; }
 	.mm__t { display: inline; }
@@ -472,3 +472,5 @@ p { margin: 0 0 1em; }
 .obsah details { border-bottom: 1px solid var(--line); padding: 10px 0; }
 .obsah summary { cursor: pointer; font-weight: 650; }
 .obsah blockquote { margin: 1em 0; padding: 12px 16px; border-left: 3px solid var(--c); background: var(--bg2); }
+.pi__ctx { font-size: .9rem; color: var(--ink2); margin-bottom: 14px; }
+.pi__ctx a { color: var(--c); }

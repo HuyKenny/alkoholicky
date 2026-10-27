@@ -1,0 +1,12 @@
+{
+ "_zdroj": "WordPress mu-plugin ah_claude_dofollow_allow (27. 10. 2026). Every external link gets rel=\"nofollow noopener\" (src/middleware.ts) except URLs containing one of these strings — approved by Kenny per URL.",
+ "allow": [
+  "allegro.cz/kategorie/parfemy-panske-parfemy-17749",
+  "sbalit.cz/svatebni-prani/",
+  "zaletet.cz/kam-na-valentyna/",
+  "zaletet.cz/libanky/",
+  "kwave.cz/tteokbokki/",
+  "mataharisalon.cz/cs",
+  "spinydnes.cz/gamblerstvi/"
+ ]
+}

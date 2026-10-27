@@ -167,10 +167,19 @@ def main():
     # pages that were only theme plumbing (WooCommerce shop, REHub wishlist/compare): not migrated, 301 → /
     DROP_PAGES = {"hlavni-stranka", "shop", "my-wishlist", "compare-products", "cart", "checkout", "my-account", "kosik", "pokladna"}
 
-    def live_ld(m):
-        """Live JSON-LD of a post/page without the site-wide Organization/WebSite nodes (Base.astro prints those)."""
+    def live_ld(m, content=""):
+        """Live JSON-LD of a post/page without the site-wide Organization/WebSite nodes (Base.astro prints those) and
+        without the blocks that are part of the article HTML itself (inline FAQPage scripts)."""
+        inline = []
+        for s in re.findall(r'<script type="application/ld\+json"[^>]*>(.*?)</script>', content, re.S):
+            try:
+                inline.append(json.loads(s))
+            except ValueError:
+                pass
         graph, extra = [], []
         for block in m.get("ld") or []:
+            if block in inline:
+                continue
             if isinstance(block, dict) and "@graph" in block:
                 graph += [n for n in block["@graph"] if isinstance(n, dict) and n.get("@type") not in ("Organization", "WebSite")]
             elif block:
@@ -392,7 +401,7 @@ def main():
                               m.get("source_url", ""), card, m.get("alt_text", ""), int(md.get("width") or 0), int(md.get("height") or 0),
                               users.get(int(p.get("author") or 0), ""), 1 if "noindex" in robots else 0, lm.get("title") or rm.get("rank_math_title", ""),
                               lm.get("desc") or rm.get("rank_math_description", "") or (live_desc.get(p["slug"]) or "").strip(), "publish", robots,
-                              live_ld(lm)])
+                              live_ld(lm, p["content"]["rendered"])])
     rep["posts"] = sum(1 for r in post_rows if r[1] == "post")
     rep["pages"] = sum(1 for r in post_rows if r[1] == "page")
     pc_rows = [[cid, c["slug"], html.unescape(c["name"]), c.get("description") or "", int(c.get("count") or 0)] for cid, c in pcats.items()]

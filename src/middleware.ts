@@ -16,6 +16,7 @@ import { clientIp } from './lib/server/http';
 import { dataVersion } from './lib/server/versions';
 import { htmlCsp, securityHeaders } from './lib/security';
 import { parseFilters, toQuery } from './lib/filters';
+import dofollow from './data/dofollow.json';
 
 const NO_CACHE = [/^\/go\//, /^\/api\//, /^\/wp-content\//, /^\/a\//, /^\/_astro\//];
 /** Paths whose case matters (base64 image paths, hashed assets, uploads) are never lowercased. */
@@ -36,7 +37,10 @@ const LEGACY: Array<[RegExp, (m: RegExpExecArray) => string]> = [
   [/^\/kategorie-produktu\/(.+)$/, (m) => '/' + m[1]!.split('/').filter(Boolean).pop() + '/'],
   [/^\/product\/(.+)$/, (m) => '/' + m[1]!.split('/').filter(Boolean).pop() + '/'],
   [/^\/category\/(.+)$/, (m) => '/' + m[1]!.split('/').filter(Boolean).pop() + '/'],
-  [/^\/brandstore\/([^/]+)\/?(.*)$/, (m) => '/znacka/' + m[1] + '/' + (m[2] ?? '')],
+  // WooCommerce store taxonomy (/eshop/<x>/, a 1:1 mirror of the brands, noindex on WordPress) → the brand
+  [/^\/eshop\/([^/]+)\/?(?:page\/\d+\/?)?$/, (m) => '/znacka/' + m[1] + '/'],
+  [/^\/produkt\/([^/]+)\/?$/, (m) => '/' + m[1] + '/'],
+  [/^\/(my-wishlist|compare-products|hlavni-stranka)\/?$/, () => '/'],
   [/^\/produkt\/$/, () => '/'],
   [/^\/(shop|obchod|kosik|cart|checkout|pokladna|muj-ucet|my-account)\/?$/, () => '/'],
   [/^\/(feed\/)?atom\/?$/, () => '/feed/'],
@@ -89,12 +93,28 @@ function nonce(): string {
   return btoa(String.fromCharCode(...b));
 }
 
+/** WordPress mu-plugin ah_claude_nofollow_external: every external link gets rel="nofollow noopener" (merged with its own
+ *  rel); links on the allowlist (src/data/dofollow.json, approved by Kenny per URL) lose nofollow/sponsored/ugc instead. */
+const DOFOLLOW = (dofollow.allow as string[]).map((s) => s.toLowerCase());
+function relExternal(e: Element) {
+  const href = e.getAttribute('href') ?? '';
+  if (!/^https?:\/\//i.test(href) || /^https?:\/\/(?:[a-z0-9-]+\.)*alkoholicky\.cz(?:[/?#]|$)/i.test(href)) return;
+  const tokens = (e.getAttribute('rel') ?? '').split(/\s+/).filter(Boolean);
+  if (DOFOLLOW.some((d) => href.toLowerCase().includes(d))) {
+    const keep = tokens.filter((t) => !['nofollow', 'sponsored', 'ugc'].includes(t.toLowerCase()));
+    if (keep.length) e.setAttribute('rel', keep.join(' ')); else e.removeAttribute('rel');
+    return;
+  }
+  for (const t of ['nofollow', 'noopener']) if (!tokens.includes(t)) tokens.push(t);
+  e.setAttribute('rel', tokens.join(' '));
+}
+
 function finish(res: Response, url: URL, extra: Record<string, string> = {}): Response {
   const env = getEnv();
   let out = new Response(res.body, res);
   if ((out.headers.get('content-type') ?? '').includes('text/html') && out.body) {
     const n = nonce();
-    out = new HTMLRewriter().on('script', { element(e) { e.setAttribute('nonce', n); } }).transform(out);
+    out = new HTMLRewriter().on('script', { element(e) { e.setAttribute('nonce', n); } }).on('a[href]', { element: relExternal }).transform(out);
     out.headers.set('Content-Security-Policy', htmlCsp(n));
   }
   for (const [k, v] of Object.entries(securityHeaders())) if (!out.headers.has(k)) out.headers.set(k, v);

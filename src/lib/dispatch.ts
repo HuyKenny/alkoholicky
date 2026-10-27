@@ -28,7 +28,14 @@ export async function dispatch(db: D1Database, pathname: string, sp: URLSearchPa
   }
   if (seg.length === 0) return sp.has('s') ? { kind: 'search', page } : page > 1 ? { kind: 'redirect', to: '/' } : { kind: 'notfound' };
   if (seg.length !== 1) {
-    if (page > 1 || JUNK.test(path)) return { kind: 'notfound' };
+    if (JUNK.test(path)) return { kind: 'notfound' };
+    // WordPress category URLs with the parent path (/lihoviny/rumy-a-ochucene-rumy/) → the flat category URL
+    const last = await resolveSlug(db, seg[seg.length - 1]!.toLowerCase());
+    if (last && (last.kind === 'category' || last.kind === 'product')) {
+      const to = `/${encodeURIComponent(seg[seg.length - 1]!.toLowerCase())}/`;
+      return { kind: 'redirect', to: page > 1 && last.kind === 'category' ? `${to}page/${page}/` : to };
+    }
+    if (page > 1) return { kind: 'notfound' };
     const g = await guessed(db, seg.join('-'));
     // nothing better: the existing first segment (/kondomy/<gone>/ → /kondomy/)
     if (g.kind === 'notfound' && await resolveSlug(db, seg[0]!.toLowerCase())) return { kind: 'redirect', to: `/${encodeURIComponent(seg[0]!.toLowerCase())}/` };

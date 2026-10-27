@@ -44,7 +44,7 @@ const disc = best && best.price_old > best.price ? Math.round((1 - best.price / 
 			</div>
 			<div class="pi">
 				<h1>{title}</h1>
-				<p class="pi__m ah-product-context">Srovnání cen z více než 20 e-shopů{(v.brand || v.ctxCat) && ' — '}{v.brand && <>značka <a href={`/znacka/${v.brand.slug}/`}>{decode(v.brand.name)}</a></>}{v.brand && v.ctxCat && ', '}{v.ctxCat && <>kategorie <a href={`/${v.ctxCat.slug}/`}>{decode(v.ctxCat.name)}</a></>}.</p>
+				<p class="pi__ctx ah-product-context">Srovnání cen z více než 20 e-shopů{(v.brand || v.ctxCat) && ' — '}{v.brand && <>značka <a href={`/znacka/${v.brand.slug}/`}>{decode(v.brand.name)}</a></>}{v.brand && v.ctxCat && ', '}{v.ctxCat && <>kategorie <a href={`/${v.ctxCat.slug}/`}>{decode(v.ctxCat.name)}</a></>}.</p>
 				{specs.length > 0 && <ul class="pi__spec">{specs.slice(0, 5).map(([k, val]) => <li>{k}: <b>{val}</b></li>)}</ul>}
 				{v.p.short_html && <div class="pi__k" set:html={v.p.short_html} />}
 				<div class="pb">

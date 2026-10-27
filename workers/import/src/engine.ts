@@ -38,7 +38,7 @@ function shortHash(s: string): string {
 }
 
 /** Feeds whose parameters win when shops disagree (the richest, most consistent data first). */
-const PARAM_PRIORITY = ['Feed__2', 'Feed__15', 'Feed__9', 'Feed__8', 'Feed__1', 'Feed__7', 'Feed__12', 'Feed__13', 'Feed__16'];
+const PARAM_PRIORITY = ['Feed__1', 'Feed__11', 'Feed__3', 'Feed__2', 'Feed__19', 'Feed__4', 'Feed__10'];
 const imgKey = (u: string) => u.replace(/\/product\/(original|detail)\//, '/product/x/').replace(/^https?:\/\//, '');
 
 /** Gallery (up to 4 images besides the main one, from one shop) and canonical params of products, merged from their active offers. */
@@ -137,7 +137,7 @@ export async function runFeed(env: Env, f: FeedDef, opts: { force?: boolean } = 
     const dup = new Set<string>();
     const add = (e: string, pid: number) => { if (!e) return; const p = m.get(e); if (p !== undefined && p !== pid) dup.add(e); else m.set(e, pid); };
     for (const r of (await db.prepare("SELECT id, ean FROM products WHERE ean <> '' AND status = 'publish'").all<{ id: number; ean: string }>()).results) add(r.ean.replace(/^0+(?=\d{12,13}$)/, ''), r.id);
-    for (const r of (await db.prepare("SELECT product_id, ean FROM offers WHERE ean <> '' AND feed = 'Feed__6'").all<{ product_id: number; ean: string }>()).results) add(r.ean.replace(/^0+(?=\d{12,13}$)/, ''), r.product_id);
+    for (const r of (await db.prepare("SELECT product_id, ean FROM offers WHERE ean <> '' AND feed = 'Feed__1'").all<{ product_id: number; ean: string }>()).results) add(r.ean.replace(/^0+(?=\d{12,13}$)/, ''), r.product_id);
     for (const e of dup) m.delete(e); // ambiguous EAN → never attach automatically
     return m;
   };

@@ -103,3 +103,35 @@ for (const input of $$<HTMLInputElement>('input[data-suggest]')) {
   });
   document.addEventListener('click', (e) => { if (!(e.target as Element).closest('.hs')) hide(); });
 }
+
+// Promile calculator of /alkohol-kalkulacka/ (WordPress mu-plugin ah_claude_promile_form, v2.0): the form is part of the
+// article HTML, the calculation ran from a footer script. Widmark: r man 0.68 / woman 0.55, elimination 0.15 ‰ per hour.
+(() => {
+  const f = document.getElementById('ah-promile') as HTMLFormElement | null;
+  const out = document.getElementById('ah-promile-out');
+  if (!f || !out) return;
+  f.removeAttribute('onsubmit');
+  f.addEventListener('submit', (e) => e.preventDefault());
+  const el = (n: string) => f.elements.namedItem(n) as HTMLInputElement | null;
+  const num = (n: string) => { const v = parseFloat(String(el(n)?.value ?? '').replace(',', '.')); return Number.isFinite(v) && v > 0 ? v : 0; };
+  const fmt = (x: number) => x.toFixed(2).replace('.', ',');
+  const hrs = (x: number) => { let h = Math.floor(x), m = Math.round((x - h) * 60); if (m === 60) { h++; m = 0; } return h + ' h' + (m ? ' ' + m + ' min' : ''); };
+  const calc = () => {
+    const r = parseFloat((f.querySelector('input[name=sex]:checked') as HTMLInputElement | null)?.value ?? '0.68');
+    const kg = num('kg') || 80;
+    let g = 0;
+    f.querySelectorAll<HTMLInputElement>('input[data-g]').forEach((i) => { g += num(i.name) * parseFloat(i.getAttribute('data-g') ?? '0'); });
+    g += num('cml') * num('cpct') / 100 * 0.789;
+    if (g <= 0) { out.className = 'ahp-out'; out.innerHTML = 'Zadejte, co jste vypili — výsledek se spočítá hned.'; return; }
+    const peak = g / (kg * r), t = num('h'), now = Math.max(0, peak - 0.15 * t), left = Math.max(0, now / 0.15);
+    const clock = new Date(Date.now() + left * 3600000).toLocaleString('cs-CZ', { weekday: 'long', hour: '2-digit', minute: '2-digit' });
+    out.className = 'ahp-out ' + (now > 0 ? 'warn' : 'ok');
+    out.innerHTML = 'Čistý alkohol: <b>' + Math.round(g) + ' g</b> · nejvyšší hladina cca <b>' + fmt(peak) + ' ‰</b>'
+      + '<strong class="big">Teď máte cca ' + fmt(now) + ' ‰</strong>'
+      + (now > 0 ? 'Na 0,00 ‰ budete zhruba za <b>' + hrs(left) + '</b> (kolem: ' + clock + '). Do té doby neřiďte.'
+        : 'Podle výpočtu by alkohol měl být odbouraný. Odhad je ale jen orientační — pokud jste pili hodně nebo nedávno, raději ještě počkejte.');
+  };
+  f.addEventListener('input', calc);
+  f.addEventListener('change', calc);
+  calc();
+})();
