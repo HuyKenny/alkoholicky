@@ -196,7 +196,8 @@ export async function cardsByIds(db: D1Database, ids: number[]): Promise<Card[]>
 }
 
 export async function loadBrand(db: D1Database, slug: string): Promise<Brand | null> {
-  return db.prepare('SELECT * FROM brands WHERE slug = ?').bind(slug).first<Brand>();
+  // WordPress kept non-ASCII brand slugs percent-encoded in lower case (antonio-nadal-destil%c2%b7leries)
+  return db.prepare('SELECT * FROM brands WHERE slug IN (?, ?) LIMIT 1').bind(slug, encodeURIComponent(slug).toLowerCase()).first<Brand>();
 }
 
 export async function loadPost(db: D1Database, id: number): Promise<Post | null> {
