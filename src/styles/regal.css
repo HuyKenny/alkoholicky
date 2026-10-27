@@ -288,3 +288,4 @@ h2 { font-weight: 750; letter-spacing: -.015em; }
 .cl__s a { border: 2px solid var(--ink); }
 .ga__t button { border-width: 2px; }
 .lista .btn { box-shadow: none; }
+.fl .fc input { padding: 0 10px; font-size: .86rem; }
