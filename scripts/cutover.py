@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Switch alkoholicky.cz between WordPress (WEDOS origin) and the Worker "eroka".
+"""Switch alkoholicky.cz between WordPress (WEDOS origin) and the Worker "alkoholicky".
 
     ALK_PRODUCTION_APPROVED=yes scripts/cutover.py apply      # Worker live on alkoholicky.cz + www
     ALK_PRODUCTION_APPROVED=yes scripts/cutover.py rollback   # back to WordPress (origin untouched meanwhile)
     scripts/cutover.py status
 
-apply:    back up the zone cache ruleset (backups/eroka-cf-zone-<date>/), drop the WordPress-era Cache Rules (they turn
+apply:    back up the zone cache ruleset (backups/alkoholicky-cf-zone-<date>/), drop the WordPress-era Cache Rules (they turn
           off the Worker's Cache API), browser cache TTL 0 (= respect headers), routes alkoholicky.cz/* + www.alkoholicky.cz/*,
           purge everything.
 rollback: delete the routes, restore the Cache Rules + browser TTL from the backup given by --from (default: newest),
@@ -19,7 +19,7 @@ import sys
 import urllib.request
 
 ROOT = "/home/kenny/ai"
-SCRIPT = "eroka"
+SCRIPT = "alkoholicky"
 PATTERNS = ["alkoholicky.cz/*", "www.alkoholicky.cz/*"]
 WP_BROWSER_TTL = 31536000  # zone value before the cutover (27. 10. 2026)
 
@@ -73,7 +73,7 @@ def status():
 
 
 def apply():
-    d = f"{ROOT}/backups/eroka-cf-zone-{datetime.date.today().isoformat()}"
+    d = f"{ROOT}/backups/alkoholicky-cf-zone-{datetime.date.today().isoformat()}"
     os.makedirs(d, exist_ok=True)
     rs = cache_ruleset()
     json.dump(rs, open(f"{d}/cache-ruleset.json", "w"), ensure_ascii=False, indent=1)
@@ -95,7 +95,7 @@ def rollback():
     for r in routes():
         api("DELETE", f"/workers/routes/{r['id']}")
         print(f"route {r['pattern']}: deleted")
-    src = sys.argv[sys.argv.index("--from") + 1] if "--from" in sys.argv else sorted(glob.glob(f"{ROOT}/backups/eroka-cf-zone-*/cache-ruleset.json"))[-1]
+    src = sys.argv[sys.argv.index("--from") + 1] if "--from" in sys.argv else sorted(glob.glob(f"{ROOT}/backups/alkoholicky-cf-zone-*/cache-ruleset.json"))[-1]
     saved = json.load(open(src))
     keep = [{k: v for k, v in x.items() if k in ("action", "action_parameters", "description", "enabled", "expression")} for x in saved.get("rules", [])]
     if keep:

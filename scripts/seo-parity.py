@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""SEO parity: a reference (default: production on workers.dev = what alkoholicky.cz serves) vs a new environment.
-Until 27. 10. 2026 the reference was the WordPress origin; WordPress is deleted, use --ref for another reference.
+"""SEO parity: a reference vs a new environment. `--ref origin` = the WordPress origin (before the cutover 27. 10. 2026),
+default = production on workers.dev (what alkoholicky.cz serves after the cutover).
 
     python3 scripts/seo-parity.py <base-url> [--products N] [--brands N] [--paged N] [--out report.json]
     python3 scripts/seo-parity.py <base-url> --only report.json      # re-check only the URLs that differed last time
@@ -38,12 +38,15 @@ def creds(f):
 
 
 sk = creds('.kuponmat-sk-credentials.env')
-UA = 'Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 Chrome/141.0 Safari/537.36 eroka-parity'
+UA = 'Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 Chrome/141.0 Safari/537.36 alkoholicky-parity'
 
 
 def fetch(url, access=False, live=False):
     cmd = ['curl', '-s', '-m', '90', '-A', UA, '-o', '-', '-w', '\n__STATUS__%{http_code} %{redirect_url}', '--max-redirs', '0', url]
-    if live and url.startswith('https://alkoholicky.cz'):
+    if live and url.startswith('https://alkoholicky.cz') and REF == 'origin':
+        # WordPress on the WEDOS origin (Cloudflare challenges Malina)
+        cmd[1:1] = ['-k', '--resolve', 'alkoholicky.cz:443:89.221.213.39']
+    elif live and url.startswith('https://alkoholicky.cz'):
         cmd[-1] = REF + url[len('https://alkoholicky.cz'):]
     if access:
         cmd[1:1] = ['-H', 'CF-Access-Client-Id: ' + sk['ACCESS_CLIENT_ID_STAGING'], '-H', 'CF-Access-Client-Secret: ' + sk['ACCESS_CLIENT_SECRET_STAGING']]
@@ -92,8 +95,9 @@ cats = by.get('product_cat-sitemap', [])
 sample = (pick('post-sitemap', 999) + pick('page-sitemap', 99) + pick('category-sitemap', 99) + cats
           + pick('product_brand-sitemap', N_BRANDS) + pick('product-sitemap', N_PRODUCTS)
           + [c + 'page/2/' for c in cats[:N_PAGED]]
-          + ['/blog/page/2/', '/znacka/satisfyer/page/2/', '/neexistuje-xyz/', '/kategorie-produktu/vibratory/', '/brandstore/satisfyer/',
-             '/satisfyer-pro-2-next-generation/', '/feed/', '/domov/', '/vibratory/page/1/'])
+          + ['/blog/page/2/', '/znacka/jagermeister/', '/znacka/becherovka/', '/znacka/karloff-tatratea-tatransky-caj/', '/znacka/monin/page/2/',
+             '/neexistuje-xyz/', '/lihoviny/rumy-a-ochucene-rumy/', '/eshop/monin/', '/19-crimes-cali-red-075l-125/', '/alkoholcz/',
+             '/z-ceho-se-vyrabi-vodka-prehled-zakladnich-surovin/', '/produkt/monin-mangue-mango-0-7l/', '/category/zajimavosti/', '/rumy-a-ochucene-rumy/page/1/'])
 sample = [p for p in dict.fromkeys(sample) if p not in ('/produkt/',)]
 if only:
     sample = [r['path'] for r in json.load(open(only)) if r['diff']]

@@ -161,7 +161,7 @@ export async function* parseXmlItems(chunks: AsyncIterable<string>, itemName: st
         const node: XmlNode = { name, attrs: nameEnd < 0 ? {} : parseAttrs(body.slice(nameEnd)), children: [], text: '' };
         nodes[nodes.length - 1]!.children.push(node);
         if (selfClose) { /* leaf without push */ } else { stack.push(name); nodes.push(node); }
-      } else if (name === itemName) {
+      } else if (name === itemName || name.toUpperCase() === itemName.toUpperCase()) {  // Vínokrál writes <shopitem>
         itemChars = e - pos; itemNodeCount = 1;
         const node: XmlNode = { name, attrs: nameEnd < 0 ? {} : parseAttrs(body.slice(nameEnd)), children: [], text: '' };
         if (selfClose) { pos = e; yield node; continue; }
@@ -224,7 +224,7 @@ export async function* decodeXmlStream(body: ReadableStream<Uint8Array>, opts: {
       let enc = /encoding\s*=\s*["']([A-Za-z0-9_\-]+)["']/.exec(headText)?.[1]?.toLowerCase() ?? 'utf-8';
       if (probe[0] === 0xff && probe[1] === 0xfe) enc = 'utf-16le';
       try { decoder = new TextDecoder(enc, { fatal: true }); } catch {
-        // workerd's TextDecoder knows only UTF-8/16; Flagranti (eroka) sends windows-1250
+        // workerd's TextDecoder knows only UTF-8/16; some feeds (Flagranti on eroka) send windows-1250
         if (enc === 'windows-1250' || enc === 'cp1250') decoder = new Cp1250Decoder() as unknown as TextDecoder;
         else throw new XmlError('encoding', `unsupported encoding ${enc}`);
       }
