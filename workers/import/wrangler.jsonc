@@ -1,0 +1,54 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  // Offer import Worker (src/index.ts). Secrets per environment (scripts/set-feed-secrets.py):
+  //   IMPORT_SHARED_SECRET, FEED_URL_<n> for each Feed__n (URLs carry tokens).
+  "name": "alkoholicky-import-local",
+  "main": "./src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  // the largest feeds (DramRoom, Alkohol.cz ~6k items) are CPU heavy to parse
+  "limits": { "cpu_ms": 300000 },
+  "d1_databases": [{ "binding": "DB", "database_name": "alkoholicky-local", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "../../migrations" }],
+  "r2_buckets": [{ "binding": "FEED_MIRROR", "bucket_name": "alkoholicky-feeds" }],
+  "triggers": { "crons": [] },
+  "vars": {
+    "ALLOWED_FEED_HOSTS": "4bar.cz,affiliate.alza.cz,affiliateport.scaletrk.com,drinkcentrum.cz,feeds.mergado.com,reports.vicampo.de,www.alkohol.cz,www.dramroom.cz,www.lihovarek.cz,www.ocenenavina.cz,www.simplywines.cz,www.svetnapoju.cz,www.topalkohol.cz,www.warehouse1.cz",
+    "MAX_DROP_PCT": "40",
+    "STALE_DAYS": "7"
+  },
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  "env": {
+    "staging": {
+      "name": "alkoholicky-import-staging",
+      // HTTP API protected by the bearer secret; no cron on staging (runs are triggered by hand: POST /tick)
+      "workers_dev": true,
+      "preview_urls": false,
+      "triggers": { "crons": [] },
+      "limits": { "cpu_ms": 300000 },
+      "d1_databases": [{ "binding": "DB", "database_name": "alkoholicky-staging", "database_id": "66c45d04-f3c7-42b4-8b3c-49d38fbb6a27", "migrations_dir": "../../migrations" }],
+      "r2_buckets": [{ "binding": "FEED_MIRROR", "bucket_name": "alkoholicky-feeds" }],
+      "vars": {
+        "ALLOWED_FEED_HOSTS": "4bar.cz,affiliate.alza.cz,affiliateport.scaletrk.com,drinkcentrum.cz,feeds.mergado.com,reports.vicampo.de,www.alkohol.cz,www.dramroom.cz,www.lihovarek.cz,www.ocenenavina.cz,www.simplywines.cz,www.svetnapoju.cz,www.topalkohol.cz,www.warehouse1.cz",
+        "MAX_DROP_PCT": "40",
+        "STALE_DAYS": "7"
+      }
+    },
+    "production": {
+      "name": "alkoholicky-import",
+      "workers_dev": true,
+      "preview_urls": false,
+      // every 10 min between 01:00 and 05:50 UTC: 19 feeds one by one, then the day is finalised
+      "triggers": { "crons": ["*/10 1-5 * * *"] },
+      "limits": { "cpu_ms": 300000 },
+      "d1_databases": [{ "binding": "DB", "database_name": "alkoholicky-production", "database_id": "5760b578-8955-42b1-abd7-d29ca423ad83", "migrations_dir": "../../migrations" }],
+      "r2_buckets": [{ "binding": "FEED_MIRROR", "bucket_name": "alkoholicky-feeds" }],
+      "vars": {
+        "ALLOWED_FEED_HOSTS": "4bar.cz,affiliate.alza.cz,affiliateport.scaletrk.com,drinkcentrum.cz,feeds.mergado.com,reports.vicampo.de,www.alkohol.cz,www.dramroom.cz,www.lihovarek.cz,www.ocenenavina.cz,www.simplywines.cz,www.svetnapoju.cz,www.topalkohol.cz,www.warehouse1.cz",
+        "MAX_DROP_PCT": "40",
+        "STALE_DAYS": "7"
+      }
+    }
+  }
+}

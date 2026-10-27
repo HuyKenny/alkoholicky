@@ -1,0 +1,140 @@
+---
+// Homepage: search first (H1 + search + popular searches), category tiles with product photos, today's biggest
+// discounts, the most popular products, brands, shops, how the comparison works, magazine, SEO text and FAQ.
+// Title, description, H1, the SEO text and the FAQ (FAQPage JSON-LD) are the texts Google knows — unchanged.
+import Base from '../../layouts/Base.astro';
+import Ik from '../Ik.astro';
+import Karta from '../Karta.astro';
+import PostKarta from '../PostKarta.astro';
+import type { homeView } from '../../lib/views';
+import { cislo, decode } from '../../lib/format';
+import { picture } from '../../lib/img';
+import { shopIcon, shopLogo, shopName } from '../../lib/shops';
+import { BASE, OG_HOME } from '../../lib/site';
+import { robots } from '../../lib/seo';
+
+interface Props { v: Awaited<ReturnType<typeof homeView>> }
+const { v } = Astro.props;
+// title, description, H1, the SEO text and the FAQ (FAQPage = the page node) are the texts Google knows from WordPress
+const title = 'Alkohol — srovnání cen z 20+ e-shopů | Alkoholický';
+const description = 'Alkohol na jednom místě: srovnáme ceny whisky, rumu, ginu i vína z více než 20 e-shopů. Najděte alkohol v akci a kupte ho za nejlepší cenu.';
+const TILES: Array<[string, string]> = [
+	['whisky-a-ochucene-whisky', 'Whisky'], ['rumy-a-ochucene-rumy', 'Rum'], ['giny', 'Gin'], ['vodky-a-ochucene-vodky', 'Vodka'],
+	['likery', 'Likéry'], ['konaky', 'Koňak'], ['tequily', 'Tequila'], ['vina', 'Víno'],
+	['sumiva-a-perliva-vina', 'Šumivá vína'], ['prosecco', 'Prosecco'], ['miniatury-alkoholu', 'Miniatury'], ['nealko', 'Nealko'],
+];
+const tiles = TILES.map(([slug, label]) => { const c = v.tree.bySlug.get(slug); return c && c.count_total > 0 ? { slug, label, count: c.count_total, img: v.imgs[String(c.id)] } : null; }).filter((x): x is NonNullable<typeof x> => !!x);
+const POPULAR: Array<[string, string]> = [['/znacka/jagermeister/', 'Jägermeister'], ['/whisky-a-ochucene-whisky/', 'whisky'], ['/znacka/becherovka/', 'Becherovka'], ['/rumy-a-ochucene-rumy/', 'rum'], ['/znacka/karloff-tatratea-tatransky-caj/', 'Tatranský čaj'], ['/giny/', 'gin'], ['/alkohol-kalkulacka/', 'alkohol kalkulačka']];
+const popular = POPULAR.filter(([u]) => !u.startsWith('/znacka/') || v.brands.bySlug.has(u.split('/')[2]!));
+const brands = v.home.brands.map(([id, n]) => { const b = v.brands.byId.get(id); return b ? { slug: b.slug, name: decode(b.name), n } : null; }).filter((x): x is NonNullable<typeof x> => !!x).slice(0, 12);
+const shops = v.home.shops.filter(([, n]) => n >= 20).slice(0, 14);
+const FAQ: Array<[string, string]> = [
+	['Jak Alkoholický.cz srovnává ceny alkoholu?', 'Agregujeme nabídky z více než 20 ověřených e-shopů a u každého produktu zobrazujeme nejnižší aktuální cenu i historii ceny, abyste nakoupili co nejvýhodněji.'],
+	['Je nákup přes Alkoholický.cz bezpečný?', 'Ano. Sami nic neprodáváme, pouze vás odkážeme na ověřený e-shop, kde nákup dokončíte za stejnou cenu, jako byste šli přímo. Cena se pro vás naším odkazem nemění.'],
+	['Jak často aktualizujete ceny?', 'Ceny i dostupnost aktualizujeme průběžně každý den, takže vidíte aktuální nabídky jednotlivých obchodů.'],
+	['Kde najdu nejlevnější alkohol?', 'Použijte vyhledávání nahoře nebo procházejte kategorie (whisky, rum, gin, víno a další). U každého produktu hned uvidíte, který obchod má nejnižší cenu.'],
+];
+const graph = [
+	{ '@type': 'ImageObject', '@id': OG_HOME, url: OG_HOME, width: '1920', height: '1280', inLanguage: 'cs' },
+	{
+		'@type': 'FAQPage', '@id': BASE + '/#webpage', url: BASE + '/', name: title, about: { '@id': BASE + '/#organization' }, isPartOf: { '@id': BASE + '/#website' },
+		primaryImageOfPage: { '@id': OG_HOME }, inLanguage: 'cs',
+		mainEntity: FAQ.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+	},
+];
+const jsonLd: unknown[] = [];
+---
+<Base title={title} description={description} canonical={BASE + '/'} robots={robots(false)} ogType="website" ogImage={OG_HOME} graph={graph} jsonLd={jsonLd} pageType="home" searchAction={true}>
+	<section class="hero">
+		<div class="w">
+			<h1>Alkohol za nejlepší ceny na jednom místě</h1>
+			<p class="hero__l">Srovnáváme ceny whisky, rumu, ginu, vína a dalšího alkoholu z více než 20 ověřených e-shopů. Najděte, kde stejnou lahev koupíte nejlevněji.</p>
+			<div class="hs">
+				<form class="hs__f" role="search" method="get" action="/" autocomplete="off">
+					<label class="vh" for="hs-hero">Hledat produkt, značku nebo kategorii</label>
+					<Ik id="hledat" />
+					<input type="search" id="hs-hero" name="s" placeholder="Např. Jägermeister, skotská whisky, prosecco…" data-suggest enterkeyhint="search" />
+					<button type="submit">Hledat</button>
+				</form>
+				<div class="hs__s" role="listbox" hidden></div>
+			</div>
+			<ul class="hero__q"><li>Často hledané:</li>{popular.map(([u, t]) => <li><a href={u}>{t}</a></li>)}</ul>
+			<ul class="hero__s">
+				<li><b class="num">{cislo(v.home.products)}</b> produktů s cenou</li>
+				<li><b class="num">{cislo(v.home.offers)}</b> nabídek</li>
+				<li><b class="num">{shops.length}</b> obchodů</li>
+				<li>ceny aktualizujeme <b>každý den</b></li>
+			</ul>
+		</div>
+	</section>
+
+	<div class="w">
+		<section class="sek" id="kategorie" aria-labelledby="h-kat">
+			<div class="sek__h"><h2 id="h-kat">Kategorie</h2></div>
+			<ul class="kt">
+				{tiles.map((t, i) => { const im = picture(t.img, 160); return <li><a href={`/${t.slug}/`}>{im ? <img src={im.src} srcset={im.srcset} alt="" width="84" height="84" loading={i < 6 ? 'eager' : 'lazy'} decoding="async" /> : <span class="kt__x" />}<b>{t.label}</b><small>{cislo(t.count)} produktů</small></a></li>; })}
+			</ul>
+		</section>
+
+		{v.deals.length > 0 && (
+			<section class="sek" aria-labelledby="h-sl">
+				<div class="sek__h"><h2 id="h-sl">Největší slevy dnes</h2><a href="/lihoviny/?orderby=disc" rel="nofollow">Další slevy</a></div>
+				<ul class="g g--6 sc">{v.deals.slice(0, 12).map((p) => <Karta p={p} />)}</ul>
+			</section>
+		)}
+
+		{v.popular.length > 0 && (
+			<section class="sek" aria-labelledby="h-pop">
+				<div class="sek__h"><h2 id="h-pop">Nejoblíbenější produkty</h2></div>
+				<ul class="g g--6">{v.popular.slice(0, 12).map((p) => <Karta p={p} />)}</ul>
+			</section>
+		)}
+
+		{brands.length > 0 && (
+			<section class="sek" aria-labelledby="h-zn">
+				<div class="sek__h"><h2 id="h-zn">Oblíbené značky</h2></div>
+				<ul class="zn">{brands.map((b) => <li><a href={`/znacka/${b.slug}/`}>{b.name}<small>{cislo(b.n)}</small></a></li>)}</ul>
+			</section>
+		)}
+
+		<section class="sek" aria-labelledby="h-jak">
+			<div class="sek__h"><h2 id="h-jak">Jak srovnáváme ceny</h2></div>
+			<ol class="jak">
+				<li><h3>Sbíráme nabídky</h3><p>Každou noc načteme aktuální ceny a dostupnost z ověřených českých e-shopů s alkoholem.</p></li>
+				<li><h3>Párujeme stejné lahve</h3><p>Stejnou lahev od různých prodejců spojíme podle kódu EAN, takže vidíte všechny ceny vedle sebe i vývoj ceny v čase.</p></li>
+				<li><h3>Vy vyberete nejlevnější</h3><p>Kliknutím přejdete přímo do obchodu. Cena je stejná jako u prodejce, nic nepřiplácíte.</p></li>
+			</ol>
+		</section>
+
+		{shops.length > 0 && (
+			<section class="sek" aria-labelledby="h-ob">
+				<div class="sek__h"><h2 id="h-ob">Obchody, které porovnáváme</h2></div>
+				<ul class="ob">{shops.map(([d, n]) => { const l = shopLogo(d); return (
+					<li>
+						<span class="ob__l">{l ? <img src={l.src} alt={shopName(d)} width={l.w} height={l.h} loading="lazy" decoding="async" /> : <><img src={shopIcon(d)} alt="" width="24" height="24" loading="lazy" decoding="async" /><b>{shopName(d)}</b></>}</span>
+						<small>{cislo(n)} produktů</small>
+					</li>
+				); })}</ul>
+			</section>
+		)}
+
+		{v.mag.length > 0 && (
+			<section class="sek" aria-labelledby="h-mag">
+				<div class="sek__h"><h2 id="h-mag">Rádce a magazín</h2><a href="/blog/">Všechny články</a></div>
+				<ul class="pc pc--4">{v.mag.map((p) => <PostKarta p={p} h="h3" perex={false} />)}</ul>
+			</section>
+		)}
+
+		<section class="sek seo ah-alcohol-guide">
+			<h2>Alkohol online: jak nakoupit chytře</h2>
+			<p><strong>Alkohol</strong> dnes koupíte v desítkách českých e-shopů — a stejná lahev může stát o stovky korun víc, nebo míň, podle toho, kde ji objednáte. Alkoholický.cz je nezávislý srovnávač: sledujeme ceny alkoholu z více než 20 ověřených obchodů, u každé lahve zobrazujeme aktuální nejnižší cenu i vývoj ceny v čase, takže poznáte skutečnou akci od reklamního triku. Nic neprodáváme — najdeme vám nejvýhodnější nabídku a nákup dokončíte přímo u obchodníka za stejnou cenu.</p>
+			<p>Vybírejte podle druhu: <a href="/lihoviny/">lihoviny</a> od <a href="/whisky-a-ochucene-whisky/">whisky</a> přes <a href="/rumy-a-ochucene-rumy/">rum</a>, <a href="/giny/">gin</a> a <a href="/vodky-a-ochucene-vodky/">vodku</a> po <a href="/likery/">likéry</a>, k tomu <a href="/vina/">vína</a>, <a href="/prosecco/">prosecco</a> i <a href="/nealko/">nealko alternativy</a>. Sháníte dárek? Skvěle fungují <a href="/miniatury-alkoholu/">miniatury alkoholu</a> na ochutnání. A pokud po oslavě potřebujete vědět, kdy můžete za volant, poslouží naše <a href="/alkohol-kalkulacka/">alkohol kalkulačka</a>.</p>
+			<p>Alkohol nabízíme výhradně informačně — nákup je možný jen osobám starším 18 let a vždy platí: pijte s mírou.</p>
+		</section>
+
+		<section class="sek faq" aria-labelledby="h-faq" style="max-width:860px">
+			<h2 id="h-faq">Časté dotazy</h2>
+			{FAQ.map(([q, a]) => <details><summary>{q}</summary><p>{a}</p></details>)}
+		</section>
+	</div>
+</Base>

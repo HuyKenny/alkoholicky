@@ -1,0 +1,54 @@
+---
+// Header: logo, mega menu (one markup: desktop dropdown / mobile full screen, <details> works without JS), search with
+// suggestions (/api/suggest, src/scripts/ui.ts) and a row of the main categories. Menu = data/menu.json (27. 10. 2026:
+// the WordPress main menu, scripts/migrate-from-wp.py; a group with url '' has no link).
+import Ik from './Ik.astro';
+import logo from '../data/logo.svg?raw';
+import menu from '../data/menu.json';
+
+interface Item { id: number; parent: number; title: string; url: string; order: number }
+const items = (menu as Item[]).slice().sort((a, b) => a.order - b.order);
+const tree = items.filter((i) => i.parent === 0).map((i) => ({ it: i, kids: items.filter((k) => k.parent === i.id) }));
+const QUICK: Array<[string, string]> = [
+	['/whisky-a-ochucene-whisky/', 'Whisky'], ['/rumy-a-ochucene-rumy/', 'Rum'], ['/giny/', 'Gin'], ['/vodky-a-ochucene-vodky/', 'Vodka'],
+	['/likery/', 'Likéry'], ['/konaky/', 'Koňak'], ['/tequily/', 'Tequila'], ['/vina/', 'Víno'], ['/prosecco/', 'Prosecco'],
+	['/miniatury-alkoholu/', 'Miniatury'], ['/alkohol-kalkulacka/', 'Kalkulačka'], ['/blog/', 'Magazín'],
+];
+const q = (Astro.url.searchParams.get('s') ?? '').trim().toLowerCase();
+---
+<a class="skip" href="#obsah">Přeskočit na obsah</a>
+<header class="hl">
+	<div class="w hl__in">
+		<details class="mm">
+			<summary aria-label="Kategorie"><Ik id="menu" size={22} /><span class="mm__t">Kategorie</span></summary>
+			<nav class="mm__p" aria-label="Kategorie">
+				<div class="mm__top"><b>Kategorie</b><span class="mm__x" data-zavrit aria-label="Zavřít"><Ik id="zavrit" size={22} /></span></div>
+				<div class="mm__g">
+					{tree.map((n) => (
+						<div class="mm__sk">
+							{n.it.url ? <a href={n.it.url}>{n.it.title}</a> : <b>{n.it.title}</b>}
+							{n.kids.length > 0 && <ul>{n.kids.map((k) => <li><a href={k.url}>{k.title}</a></li>)}</ul>}
+						</div>
+					))}
+					<div class="mm__sk"><a href="/blog/">Rádce a magazín</a><ul><li><a href="/alkohol-kalkulacka/">Alkohol kalkulačka</a></li><li><a href="/leky-a-alkohol/">Léky a alkohol</a></li><li><a href="/adventni-kalendar-s-alkoholem/">Adventní kalendáře</a></li><li><a href="/firemni-vanocni-darky-s-alkoholem/">Firemní dárky</a></li></ul></div>
+				</div>
+			</nav>
+		</details>
+		<a class="logo" href="/" aria-label="Alkoholický.cz — srovnání cen alkoholu" set:html={logo} />
+		<div class="hs">
+			<form class="hs__f" role="search" method="get" action="/" autocomplete="off">
+				<label class="vh" for="hs-q">Hledat produkt, značku nebo kategorii</label>
+				<Ik id="hledat" />
+				<input type="search" id="hs-q" name="s" value={q} placeholder="Hledat produkt, značku, kategorii…" data-suggest aria-autocomplete="list" aria-controls="hs-s" enterkeyhint="search" />
+				<button type="submit">Hledat</button>
+			</form>
+			<div class="hs__s" id="hs-s" role="listbox" hidden></div>
+		</div>
+		<div class="hl__akce">
+			<a class="hl__a" href="/blog/"><Ik id="mrizka" /><span>Magazín</span></a>
+		</div>
+	</div>
+	<nav class="kn" aria-label="Hlavní kategorie">
+		<ul>{QUICK.map(([u, t]) => <li><a href={u}>{t}</a></li>)}</ul>
+	</nav>
+</header>

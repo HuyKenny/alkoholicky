@@ -1,0 +1,240 @@
+[
+ {
+  "id": 1,
+  "parent": 0,
+  "title": "🥃 Lihoviny",
+  "url": "/lihoviny/",
+  "order": 0
+ },
+ {
+  "id": 2,
+  "parent": 1,
+  "title": "Absinthy",
+  "url": "/absinthy/",
+  "order": 1
+ },
+ {
+  "id": 3,
+  "parent": 1,
+  "title": "Armaňaky",
+  "url": "/armanaky/",
+  "order": 2
+ },
+ {
+  "id": 4,
+  "parent": 1,
+  "title": "Aperitivy",
+  "url": "/aperitivy/",
+  "order": 3
+ },
+ {
+  "id": 5,
+  "parent": 1,
+  "title": "Brandy",
+  "url": "/brandy-a-gruzinak/",
+  "order": 4
+ },
+ {
+  "id": 6,
+  "parent": 1,
+  "title": "Giny",
+  "url": "/giny/",
+  "order": 5
+ },
+ {
+  "id": 7,
+  "parent": 1,
+  "title": "Grappy",
+  "url": "/grappy/",
+  "order": 6
+ },
+ {
+  "id": 8,
+  "parent": 1,
+  "title": "Koňaky",
+  "url": "/konaky/",
+  "order": 7
+ },
+ {
+  "id": 9,
+  "parent": 1,
+  "title": "Likéry",
+  "url": "/likery/",
+  "order": 8
+ },
+ {
+  "id": 10,
+  "parent": 1,
+  "title": "Mezcaly",
+  "url": "/mezcaly/",
+  "order": 9
+ },
+ {
+  "id": 11,
+  "parent": 1,
+  "title": "Pálenky",
+  "url": "/palenky-a-ovocne-destilaty/",
+  "order": 10
+ },
+ {
+  "id": 12,
+  "parent": 1,
+  "title": "Rumy",
+  "url": "/rumy-a-ochucene-rumy/",
+  "order": 11
+ },
+ {
+  "id": 13,
+  "parent": 1,
+  "title": "Tequily",
+  "url": "/tequily/",
+  "order": 12
+ },
+ {
+  "id": 14,
+  "parent": 1,
+  "title": "Vodky",
+  "url": "/vodky-a-ochucene-vodky/",
+  "order": 13
+ },
+ {
+  "id": 15,
+  "parent": 1,
+  "title": "Whisky",
+  "url": "/whisky-a-ochucene-whisky/",
+  "order": 14
+ },
+ {
+  "id": 16,
+  "parent": 0,
+  "title": "🍷 Vína",
+  "url": "/vina/",
+  "order": 15
+ },
+ {
+  "id": 17,
+  "parent": 16,
+  "title": "Bílá vína",
+  "url": "/bila-vina/",
+  "order": 16
+ },
+ {
+  "id": 18,
+  "parent": 16,
+  "title": "Červená vína",
+  "url": "/cervena-vina/",
+  "order": 17
+ },
+ {
+  "id": 19,
+  "parent": 16,
+  "title": "Růžová vína",
+  "url": "/ruzova-vina/",
+  "order": 18
+ },
+ {
+  "id": 20,
+  "parent": 16,
+  "title": "BIO vína",
+  "url": "/bio-vina/",
+  "order": 19
+ },
+ {
+  "id": 21,
+  "parent": 16,
+  "title": "Dezertní vína",
+  "url": "/dezertni-vina/",
+  "order": 20
+ },
+ {
+  "id": 22,
+  "parent": 16,
+  "title": "Nealko vína",
+  "url": "/nealko-vina/",
+  "order": 21
+ },
+ {
+  "id": 23,
+  "parent": 16,
+  "title": "Šumivá a perlivá vína",
+  "url": "/sumiva-a-perliva-vina/",
+  "order": 22
+ },
+ {
+  "id": 24,
+  "parent": 16,
+  "title": "Ostatní šumivá vína",
+  "url": "/ostatni-sumiva-vina/",
+  "order": 23
+ },
+ {
+  "id": 25,
+  "parent": 0,
+  "title": "Nealko",
+  "url": "/nealko/",
+  "order": 24
+ },
+ {
+  "id": 26,
+  "parent": 25,
+  "title": "Čaj",
+  "url": "/caj/",
+  "order": 25
+ },
+ {
+  "id": 27,
+  "parent": 25,
+  "title": "Energetické drinky",
+  "url": "/energeticke-drinky/",
+  "order": 26
+ },
+ {
+  "id": 28,
+  "parent": 25,
+  "title": "Káva",
+  "url": "/kava/",
+  "order": 27
+ },
+ {
+  "id": 29,
+  "parent": 25,
+  "title": "Limonády",
+  "url": "/limonady/",
+  "order": 28
+ },
+ {
+  "id": 30,
+  "parent": 25,
+  "title": "Sirupy",
+  "url": "/sirupy/",
+  "order": 29
+ },
+ {
+  "id": 31,
+  "parent": 25,
+  "title": "Perlivá voda",
+  "url": "/perliva-voda/",
+  "order": 30
+ },
+ {
+  "id": 32,
+  "parent": 25,
+  "title": "Neperlivá voda",
+  "url": "/neperliva-voda/",
+  "order": 31
+ },
+ {
+  "id": 33,
+  "parent": 25,
+  "title": "Ostatní nealko",
+  "url": "/ostatni-nealko/",
+  "order": 32
+ },
+ {
+  "id": 34,
+  "parent": 0,
+  "title": "Magazín",
+  "url": "/blog/",
+  "order": 33
+ }
+]
