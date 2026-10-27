@@ -129,7 +129,8 @@ export async function brandView(db: D1Database, slug: string, page: number, sp: 
   if (page > pages && page > 1) return null;
   const base = `/znacka/${b.slug}/`;
   const url = abs(pagePath(base, page));
-  const title = page > 1 ? paged(brandSeo(b).title, page) : (b.seo_title ? rmTitle(b.seo_title, decode(b.name)) : brandSeo(b).title);
+  // page 2+ kept Rank Math's plain term title on WordPress (the mu-plugin template only ran on page 1)
+  const title = page > 1 ? termTitle(b.name, page) : (b.seo_title ? rmTitle(b.seo_title, decode(b.name)) : brandSeo(b).title);
   // WordPress indexed every brand with a product (Rank Math default); the sitemap lists those with ≥ 3
   const thin = b.noindex === 1 || b.count < 1;
   const crumbs: Crumb[] = [{ name: 'Domů', url: '/' }, { name: decode(b.name), url: base }];

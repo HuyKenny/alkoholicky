@@ -5,7 +5,7 @@ import { getEnv } from '../lib/server/env';
 import { siteCache } from '../lib/db';
 
 export const prerender = false;
-const NAME = /^(post-sitemap|page-sitemap|category-sitemap|product-sitemap\d+|product_brand-sitemap\d+|product_cat-sitemap\d+)$/;
+const NAME = /^(post-sitemap|page-sitemap|category-sitemap|product-sitemap\d*|product_brand-sitemap\d*|product_cat-sitemap\d*)$/;
 export const GET: APIRoute = async ({ params }) => {
   const name = String(params.sitemap ?? '');
   const xml = NAME.test(name) ? await siteCache(getEnv().DB, `sitemap:${name}`) : null;

@@ -4,7 +4,7 @@ import { getEnv } from '../../lib/server/env';
 
 export const prerender = false;
 const MAX_AGE_H = 30;
-const MIN_OFFERS = 20_000;
+const MIN_OFFERS = 8_000;  // alkoholicky.cz: ~14k active offers after the first import (27. 10. 2026)
 
 export const GET: APIRoute = async () => {
   const db = getEnv().DB;
