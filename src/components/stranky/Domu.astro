@@ -96,7 +96,7 @@ const jsonLd: unknown[] = [];
 		{brands.length > 0 && (
 			<section class="sek" aria-labelledby="h-zn">
 				<div class="sek__h"><h2 id="h-zn"><img src={ikona('sud', true)} alt=\"\" width=\"44\" height="44" loading="lazy" />Oblíbené značky</h2></div>
-				<ul class="zn">{brands.map((b) => <li><a href={`/znacka/${b.slug}/`}>{b.name}<small>{cislo(b.n)}</small></a></li>)}</ul>
+				<ul class="zn">{brands.map((b) => <li><a href={`/znacka/${b.slug}/`} title={b.name}><span>{b.name}</span><small>{cislo(b.n)}</small></a></li>)}</ul>
 			</section>
 		)}
 

@@ -9,7 +9,8 @@ import menu from '../data/menu.json';
 
 interface Item { id: number; parent: number; title: string; url: string; order: number }
 const items = (menu as Item[]).slice().sort((a, b) => a.order - b.order);
-const tree = items.filter((i) => i.parent === 0).map((i) => ({ it: i, kids: items.filter((k) => k.parent === i.id) }));
+// top-level items without children (the WordPress "Magazín" link) live in the hand-made Rádce group instead
+const tree = items.filter((i) => i.parent === 0).map((i) => ({ it: i, kids: items.filter((k) => k.parent === i.id) })).filter((n) => n.kids.length > 0);
 const QUICK: Array<[string, string, string]> = [
 	['/whisky-a-ochucene-whisky/', 'Whisky', 'whisky'], ['/rumy-a-ochucene-rumy/', 'Rum', 'rum'], ['/giny/', 'Gin', 'gin'], ['/vodky-a-ochucene-vodky/', 'Vodka', 'vodka'],
 	['/likery/', 'Likéry', 'likery'], ['/konaky/', 'Koňak', 'konak'], ['/tequily/', 'Tequila', 'tequila'], ['/vina/', 'Víno', 'vino'],

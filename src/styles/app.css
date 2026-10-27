@@ -133,9 +133,7 @@ p { margin: 0 0 1em; }
 .k__b { position: relative; z-index: 2; min-height: 36px; font-size: .86rem; padding: 0 10px; }
 @media (min-width: 640px) { .k { padding: 12px 14px 14px; } }
 
-/* render below-the-fold blocks lazily (layout/paint only when scrolled near) */
-.g > li:nth-child(n+9), .sek, .pa-t { content-visibility: auto; contain-intrinsic-size: auto 420px; }
-.g > li:nth-child(n+9) { contain-intrinsic-size: auto 360px; }
+/* no content-visibility on sections/cards: its paint containment clips the hard offset shadows of design v2 (audit 28. 10.) */
 
 /* listing */
 .lh { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 6px; }

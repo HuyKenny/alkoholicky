@@ -17,7 +17,8 @@
 	--mata: #EEF5F1;
 	--c: var(--zel); --c-d: var(--zel-d); --c-l: var(--zel-l);
 	--ink: #1C1A17; --ink2: #4F4A44; --ink3: #857D74;
-	--line: #1C1A17; --line2: #1C1A17; --sit: #DDE6E1;
+	/* --line = soft separators (tables, rows, inputs); frames use var(--ink) explicitly */
+	--line: #DDE6E1; --line2: #C9D6CF; --sit: #DDE6E1;
 	--bg2: var(--mata); --bg3: #E2ECE6;
 	--r: 10px; --r2: 14px;
 	--sh: 4px 4px 0 var(--ink); --sh-s: 3px 3px 0 var(--ink);
@@ -191,7 +192,7 @@ h2 { font-weight: 750; letter-spacing: -.015em; }
 @media (max-width: 959px) { .hero__pozn { display: none; } }
 .kt { gap: 12px; }
 @media (min-width: 700px) { .kt { gap: 16px; } }
-.kt a { position: relative; border: 2px solid var(--ink); border-radius: 16px 16px 16px 4px; box-shadow: var(--sh-s); padding: 14px 8px 12px; background: #fff; }
+.kt a { position: relative; border: 2px solid var(--ink); border-radius: var(--r2); box-shadow: var(--sh-s); padding: 14px 8px 12px; background: #fff; }
 .kt li:nth-child(3n+1) a { background: var(--mata); }
 .kt li:nth-child(3n+2) a { background: var(--zlata-l); }
 .kt a:hover { box-shadow: 6px 6px 0 var(--ink); border-color: var(--ink); transform: translate(-2px, -2px) rotate(-1deg); }
@@ -199,11 +200,10 @@ h2 { font-weight: 750; letter-spacing: -.015em; }
 .kt img, .kt .kt__x { width: 92px; height: 92px; }
 .kt b { font-family: var(--disp); font-size: 1rem; font-weight: 750; }
 .kt small { color: var(--ink2); font-weight: 600; }
-.zn a { border: 2px solid var(--ink); border-radius: 999px; padding: 10px 16px; background: #fff; box-shadow: 2px 2px 0 var(--ink); }
+.zn a { border: 2px solid var(--ink); border-radius: var(--r2); padding: 10px 14px; min-height: 48px; background: #fff; box-shadow: 2px 2px 0 var(--ink); }
 .zn a:hover { background: var(--zlata-l); border-color: var(--ink); }
 .zn small { background: var(--ink); color: #fff; border-radius: 999px; padding: 1px 8px; font-weight: 700; }
-.ob li { border: 2px solid var(--ink); border-radius: var(--r2); box-shadow: 2px 2px 0 var(--ink); overflow: hidden; padding: 0 0 10px; }
-.ob li::before { content: ""; display: block; align-self: stretch; height: 8px; background: var(--ob, var(--zel)); border-bottom: 2px solid var(--ink); margin-bottom: 8px; }
+.ob li { border: 2px solid var(--ink); border-top: 8px solid var(--ob, var(--zel)); border-radius: var(--r2); box-shadow: 2px 2px 0 var(--ink); padding: 12px 8px 10px; }
 .ob__l img { width: 30px; height: 30px; border: 2px solid var(--ink); border-radius: 6px; padding: 2px; background: #fff; }
 .jak li { background: #fff; border: 2px solid var(--ink); box-shadow: var(--sh-s); position: relative; }
 .jak li::before { content: none; }
@@ -263,3 +263,28 @@ h2 { font-weight: 750; letter-spacing: -.015em; }
 }
 .pa-t .logo img { background: #E7F1EC; border-radius: 10px; padding: 3px; }
 @media (max-width: 699px) { .hero__s li { font-size: .8rem; padding: 6px 10px; } .hero__s b { font-size: 1rem; } }
+
+/* audit 28. 10.: shadows never clipped, one corner system, soft inner lines */
+.sc { padding: 6px 10px 12px 2px; margin: -6px -10px 0 -2px; scroll-padding-left: 2px; }
+.sc > li { flex-basis: 47%; }
+.g, .kt, .zn, .ob, .pc, .jak, .podk ul { padding-right: 4px; padding-bottom: 4px; }
+.zn a span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.zn small { flex: none; }
+.pt th, .pt td { border-bottom: 1.5px dashed var(--sit); }
+.pt tr:last-child th, .pt tr:last-child td { border-bottom: 0; }
+.hs__s a[aria-selected="true"], .hs__s a:hover { background: var(--zlata-l); }
+.mm__p { background: #fff; }
+.mm__sk { border-bottom: 1.5px dashed var(--sit); }
+.mm__sk li a:hover { color: var(--zel); text-decoration: underline; }
+:focus-visible { outline: 3px solid var(--zlata); outline-offset: 2px; border-radius: 6px; }
+.k:focus-within { box-shadow: 6px 6px 0 var(--ink); }
+.fl .fc input { border: 2px solid var(--ink); border-radius: 999px; padding: 0 12px; }
+.fl__ok .btn { width: 100%; }
+.fo input[type="checkbox"] { width: 18px; height: 18px; }
+.str [aria-current] { border: 2px solid var(--ink); }
+.dr { font-weight: 600; }
+.pk2__i { border-radius: var(--r2); }
+.pk2 h2, .pk2 h3 { font-family: var(--disp); font-weight: 700; }
+.cl__s a { border: 2px solid var(--ink); }
+.ga__t button { border-width: 2px; }
+.lista .btn { box-shadow: none; }
