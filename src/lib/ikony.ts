@@ -17,12 +17,14 @@ export const ikona = (name: string, small = false) => `/a/ik/${small ? 's/' : ''
 
 /** Illustration of a category (own or of the nearest ancestor), or null. */
 export function catIcon(slug: string, tree?: { byId: Map<number, Cat>; bySlug: Map<string, Cat> }): string | null {
-  if (MAP[slug]) return ikona(MAP[slug]);
+  const own = MAP[slug];
+  if (own) return ikona(own);
   let c = tree?.bySlug.get(slug);
   const seen = new Set<number>();
   while (c && !seen.has(c.id)) {
     seen.add(c.id);
-    if (MAP[c.slug]) return ikona(MAP[c.slug]);
+    const hit = MAP[c.slug];
+    if (hit) return ikona(hit);
     c = tree?.byId.get(c.parent);
   }
   return null;

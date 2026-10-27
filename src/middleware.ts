@@ -60,7 +60,9 @@ const LEGACY: Array<[RegExp, (m: RegExpExecArray) => string]> = [
 /** Final path after all canonicalisation steps, or null when the request is already canonical. */
 async function canonicalPath(path: string, db: D1Database): Promise<{ to: string; status: number } | null> {
   let p = path.replace(/\/\/+/g, '/');
-  if (/[A-Z]/.test(p) && !KEEP_CASE.test(p)) p = p.toLowerCase();
+  // lower-case letters only: percent-escapes stay upper case — Cloudflare normalises them (%c2 → %C2), lower-casing
+  // them redirected /znacka/…%C2%B7…/ to itself forever (audit 28. 10. 2026)
+  if (/[A-Z]/.test(p.replace(/%[0-9A-F]{2}/gi, '')) && !KEEP_CASE.test(p)) p = p.toLowerCase().replace(/%[0-9a-f]{2}/g, (m) => m.toUpperCase());
   // the old theme appended "null" to links: /<anything>/null
   if (/\/null\/?$/i.test(p)) p = p.replace(/\/null\/?$/i, '/');
   // WordPress REST/oEmbed endpoints are gone for good
@@ -96,8 +98,35 @@ function nonce(): string {
 /** WordPress mu-plugin ah_claude_nofollow_external: every external link gets rel="nofollow noopener" (merged with its own
  *  rel); links on the allowlist (src/data/dofollow.json, approved by Kenny per URL) lose nofollow/sponsored/ugc instead. */
 const DOFOLLOW = (dofollow.allow as string[]).map((s) => s.toLowerCase());
+/** Internal link → its final URL when it would redirect (old WordPress paths in article content: /kategorie-produktu/…,
+ *  /produkt/…, Rank Math redirects). Sync: uses the redirect map already loaded for this request; null = keep. */
+function finalInternal(path: string): string | null {
+  const map = redirMemo?.map;
+  let p = path.replace(/\/\/+/g, '/');
+  let changed = false;
+  for (const [re, to] of LEGACY) {
+    const m = re.exec(p);
+    if (m) { p = to(m); changed = true; break; }
+  }
+  if (!/\.[a-z0-9]{2,5}$/i.test(p) && !p.endsWith('/')) { p += '/'; changed = true; }
+  for (let i = 0; i < 3 && map; i++) {
+    let key = p;
+    try { key = decodeURIComponent(p).toLowerCase(); } catch { /* keep */ }
+    const r = map.get(key);
+    if (!r || r.status === 410 || !r.to_path.startsWith('/')) break;
+    p = r.to_path; changed = true;
+  }
+  return changed && p !== path ? p : null;
+}
+
 function relExternal(e: Element) {
   const href = e.getAttribute('href') ?? '';
+  const own = /^(?:https?:\/\/(?:www\.)?alkoholicky\.cz)?(\/(?!go\/|api\/|wp-content\/|a\/|_astro\/)[^?#]*)(.*)$/i.exec(href);
+  if (own && (href.startsWith('/') || /^https?:/i.test(href))) {
+    const to = finalInternal(own[1]!);
+    if (to) e.setAttribute('href', to + own[2]!);
+    return;
+  }
   if (!/^https?:\/\//i.test(href) || /^https?:\/\/(?:[a-z0-9-]+\.)*alkoholicky\.cz(?:[/?#]|$)/i.test(href)) return;
   const tokens = (e.getAttribute('rel') ?? '').split(/\s+/).filter(Boolean);
   if (DOFOLLOW.some((d) => href.toLowerCase().includes(d))) {
@@ -152,6 +181,9 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
     if (c?.status === 410) return finish(new Response('Gone', { status: 410, headers: { 'cache-control': 'public, max-age=3600' } }), url);
     if (c || www) return finish(redirect((www ? 'https://alkoholicky.cz' : '') + (c?.to ?? url.pathname) + url.search, c?.status ?? 301), url);
   }
+
+  // the redirect map also rewrites internal links in finish() (finalInternal) — make sure it is loaded (memoised 10 min)
+  if (isGet) { try { await redirects(env.DB); } catch { /* links stay as they are */ } }
 
   const cacheable = isGet && !NO_CACHE.some((r) => r.test(url.pathname)) && !ctx.request.headers.has('authorization') && env.REQUIRE_ACCESS_EVERYWHERE !== '1';
   const cache = cacheable && typeof caches !== 'undefined' ? (caches as unknown as { default: Cache }).default : null;

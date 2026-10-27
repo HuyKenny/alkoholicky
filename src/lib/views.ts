@@ -194,7 +194,7 @@ export async function productView(db: D1Database, id: number) {
   const title = productTitle(p.name, p.seo_title);
   // seo_desc = Rank Math description or the raw (untexturized) short description from the migration
   const prices0 = offers.map((o) => o.price);
-  const description = descFrom(p.seo_desc, p.short_html, { title: name },
+  const description = descFrom(p.seo_desc, p.short_html, { title: name, clamp: true },
     offers.length ? `${name} – porovnejte ceny v ${new Set(offers.map((o) => o.domain)).size} obchodech, nejlevněji od ${cislo(Math.min(...prices0))} Kč.` : '');
   // without any offer the page is thin and a Product snippet without offers is invalid → noindex, no Product node
   const noindex = p.noindex === 1 || offers.length === 0;

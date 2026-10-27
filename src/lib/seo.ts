@@ -8,7 +8,7 @@ import { decode, stripTags } from './format';
 const SEP = '|';
 const SITE = 'Alkoholický';
 
-export interface Vars { title?: string; term?: string; excerpt?: string; page?: number; pages?: number }
+export interface Vars { title?: string; term?: string; excerpt?: string; page?: number; pages?: number; /** cut a long custom text (product excerpts) */ clamp?: boolean }
 
 function pageSuffix(page = 1, pages = 1): string {
   return page > 1 ? ` - Stránka ${page} z ${pages}` : '';
@@ -40,8 +40,16 @@ export function paged(title: string, page = 1): string {
 export function rmTitle(tpl: string, name: string): string {
   return rmVars(tpl, { title: name, term: name });
 }
+/** Product title: the WordPress template while it fits in the SERP (≤ 65 characters), else a shorter suffix, else the
+ *  name alone (audit 28. 10. 2026: 2 493 product titles were over 70 characters and got cut by Google). */
 export function productTitle(name: string, custom = ''): string {
-  return rmVars(custom || '%title% %sep% Kde koupit nejlevněji? (%currentyear%)', { title: decode(name) });
+  if (custom) return rmVars(custom, { title: decode(name) });
+  const n = decode(name);
+  for (const tpl of ['%title% %sep% Kde koupit nejlevněji? (%currentyear%)', '%title% %sep% Kde nejlevněji?', '%title% %sep% %sitename%']) {
+    const t = rmVars(tpl, { title: n });
+    if (t.length <= 65) return t;
+  }
+  return n;
 }
 export function categoryTitle(name: string, custom: string, page = 1): string {
   return paged(rmVars(custom || '%term% levně – ceny a nejlepší nabídky %currentyear% %sep% %sitename%', { term: decode(name) }), page);
@@ -60,7 +68,7 @@ export function searchTitle(q: string, page: number, pages: number): string {
  *  (a filled-in template) when there is no text at all; "Strana N: " on paged listings. */
 export function descFrom(custom: string, html: string, v: Vars = {}, fallback = '', page = 1): string {
   // a per-object description (Rank Math / live snapshot) is printed whole, like Rank Math does
-  if (custom) { const c = rmVars(custom, { ...v, excerpt: stripTags(html) }); if (c) return (page > 1 ? `Strana ${page}: ` : '') + c; }
+  if (custom) { const c = rmVars(custom, { ...v, excerpt: stripTags(html) }); if (c) return (page > 1 ? `Strana ${page}: ` : '') + (v.clamp ? clamp(c, 158) : c); }
   const text = stripTags(html) || fallback;
   return (page > 1 && text ? `Strana ${page}: ` : '') + clamp(text, page > 1 ? 145 : 160);
 }
