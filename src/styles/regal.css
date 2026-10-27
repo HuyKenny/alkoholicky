@@ -234,3 +234,17 @@ h2 { font-weight: 750; letter-spacing: -.015em; }
 .alk-consent { border: 2px solid var(--ink); box-shadow: var(--sh); }
 .alk-consent__b button { border-radius: 999px; border: 2px solid var(--ink); background: var(--zel); }
 .alk-consent__b .alk-consent__no { border-color: var(--ink); }
+
+/* v2 fixes after the first screenshots (28. 10.) */
+@media (max-width: 699px) { .usp li:nth-child(n+2) { display: none; } .usp ul { padding: 5px 16px; } }
+@media (max-width: 899px) {
+	.hl__akce .hl__a:first-child { display: none; }
+	.hl__a { padding: 6px; }
+	.logo img { width: 32px; height: 32px; }
+	.logo b { font-size: 1.25rem; }
+}
+@media (max-width: 959px) { .hero__img { order: 0; max-width: 340px; margin: 4px auto -6px; } }
+.hero__pozn { top: auto; bottom: 14px; right: 40px; transform: rotate(-3deg); }
+.lh { align-items: center; }
+@media (max-width: 639px) { .lh__ik { width: 46px; height: 46px; } }
+.ga__m img { object-position: 50% 100%; }
