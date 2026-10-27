@@ -67,7 +67,7 @@ const jsonLd: unknown[] = [];
 				<li>ceny aktualizujeme <b>každý den</b></li>
 			</ul>
 			</div>
-			<img class="hero__img" src="/a/regal-800.webp" srcset="/a/regal-800.webp 800w, /a/regal.webp 1600w" sizes="(min-width: 960px) 620px, 340px" alt="" width="1600" height="1169" fetchpriority="high" decoding="async" />
+			<img class="hero__img" src="/a/regal-640.webp" srcset="/a/regal-640.webp 640w, /a/regal-1100.webp 1100w" sizes="(min-width: 960px) 620px, 340px" alt="" width="1100" height="804" fetchpriority="high" decoding="async" />
 		</div>
 	</section>
 
@@ -81,21 +81,21 @@ const jsonLd: unknown[] = [];
 
 		{v.deals.length > 0 && (
 			<section class="sek" aria-labelledby="h-sl">
-				<div class="sek__h"><h2 id="h-sl"><img src={ikona('akce')} alt="" width="44" height="44" loading="lazy" />Největší slevy dnes</h2><a href="/lihoviny/?orderby=disc" rel="nofollow">Další slevy</a></div>
+				<div class="sek__h"><h2 id="h-sl"><img src={ikona('akce', true)} alt=\"\" width=\"44\" height="44" loading="lazy" />Největší slevy dnes</h2><a href="/lihoviny/?orderby=disc" rel="nofollow">Další slevy</a></div>
 				<ul class="g g--6 sc">{v.deals.slice(0, 12).map((p) => <Karta p={p} />)}</ul>
 			</section>
 		)}
 
 		{v.popular.length > 0 && (
 			<section class="sek" aria-labelledby="h-pop">
-				<div class="sek__h"><h2 id="h-pop"><img src={ikona('prippitek')} alt="" width="44" height="44" loading="lazy" />Nejoblíbenější lahve</h2></div>
+				<div class="sek__h"><h2 id="h-pop"><img src={ikona('prippitek', true)} alt=\"\" width=\"44\" height="44" loading="lazy" />Nejoblíbenější lahve</h2></div>
 				<ul class="g g--6">{v.popular.slice(0, 12).map((p) => <Karta p={p} />)}</ul>
 			</section>
 		)}
 
 		{brands.length > 0 && (
 			<section class="sek" aria-labelledby="h-zn">
-				<div class="sek__h"><h2 id="h-zn"><img src={ikona('sud')} alt="" width="44" height="44" loading="lazy" />Oblíbené značky</h2></div>
+				<div class="sek__h"><h2 id="h-zn"><img src={ikona('sud', true)} alt=\"\" width=\"44\" height="44" loading="lazy" />Oblíbené značky</h2></div>
 				<ul class="zn">{brands.map((b) => <li><a href={`/znacka/${b.slug}/`}>{b.name}<small>{cislo(b.n)}</small></a></li>)}</ul>
 			</section>
 		)}
@@ -111,7 +111,7 @@ const jsonLd: unknown[] = [];
 
 		{shops.length > 0 && (
 			<section class="sek" aria-labelledby="h-ob">
-				<div class="sek__h"><h2 id="h-ob"><img src={ikona('doprava')} alt="" width="44" height="44" loading="lazy" />Obchody, které porovnáváme</h2></div>
+				<div class="sek__h"><h2 id="h-ob"><img src={ikona('doprava', true)} alt=\"\" width=\"44\" height="44" loading="lazy" />Obchody, které porovnáváme</h2></div>
 				<ul class="ob">{shops.map(([d, n]) => { const l = shopLogo(d); return (
 					<li style={`--ob:${shopColor(d)}`}>
 						<span class="ob__l">{l ? <img src={l.src} alt={shopName(d)} width={l.w} height={l.h} loading="lazy" decoding="async" /> : <><img src={shopIcon(d)} alt="" width="24" height="24" loading="lazy" decoding="async" /><b>{shopName(d)}</b></>}</span>
@@ -123,7 +123,7 @@ const jsonLd: unknown[] = [];
 
 		{v.mag.length > 0 && (
 			<section class="sek" aria-labelledby="h-mag">
-				<div class="sek__h"><h2 id="h-mag"><img src={ikona('magazin')} alt="" width="44" height="44" loading="lazy" />Rádce a magazín</h2><a href="/blog/">Všechny články</a></div>
+				<div class="sek__h"><h2 id="h-mag"><img src={ikona('magazin', true)} alt=\"\" width=\"44\" height="44" loading="lazy" />Rádce a magazín</h2><a href="/blog/">Všechny články</a></div>
 				<ul class="pc pc--4">{v.mag.map((p) => <PostKarta p={p} h="h3" perex={false} />)}</ul>
 			</section>
 		)}

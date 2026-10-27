@@ -12,7 +12,8 @@ const MAP: Record<string, string> = {
   'tonic': 'nealko', 'darkove-baleni': 'darky', 'darkova-baleni-alkoholu': 'darky', 'darkove-boxy': 'darky', 'palenky-a-ovocne-destilaty': 'sud',
 };
 
-export const ikona = (name: string) => `/a/ik/${name}.webp`;
+/** 256 px illustration; `small` = the 96 px variant for icons shown ≤ 48 px (menu, header, headings). */
+export const ikona = (name: string, small = false) => `/a/ik/${small ? 's/' : ''}${name}.webp`;
 
 /** Illustration of a category (own or of the nearest ancestor), or null. */
 export function catIcon(slug: string, tree?: { byId: Map<number, Cat>; bySlug: Map<string, Cat> }): string | null {

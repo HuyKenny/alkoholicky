@@ -9,6 +9,7 @@ const NAME = /^(post-sitemap|page-sitemap|category-sitemap|product-sitemap\d*|pr
 export const GET: APIRoute = async ({ params }) => {
   const name = String(params.sitemap ?? '');
   const xml = NAME.test(name) ? await siteCache(getEnv().DB, `sitemap:${name}`) : null;
-  if (!xml) return new Response('Not found', { status: 404, headers: { 'content-type': 'text/plain; charset=utf-8' } });
+  // numbered files the catalogue no longer needs (WordPress had product-sitemap1–34) are gone for good → 410, so GSC drops them
+  if (!xml) return new Response('Gone', { status: NAME.test(name) && /\d$/.test(name) ? 410 : 404, headers: { 'content-type': 'text/plain; charset=utf-8' } });
   return new Response(xml, { headers: { 'content-type': 'application/xml; charset=UTF-8', 'x-robots-tag': 'noindex, follow' } });
 };

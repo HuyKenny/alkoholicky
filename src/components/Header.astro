@@ -29,7 +29,7 @@ const q = (Astro.url.searchParams.get('s') ?? '').trim().toLowerCase();
 				<div class="mm__g">
 					{tree.map((n) => (
 						<div class="mm__sk">
-							{n.it.url ? <a href={n.it.url}>{catIcon(n.it.url.replace(/\//g, '')) && <img src={catIcon(n.it.url.replace(/\//g, ''))!} alt="" width="30" height="30" loading="lazy" />}{n.it.title.replace(/^[^\p{L}]+/u, '')}</a> : <b>{n.it.title}</b>}
+							{n.it.url ? <a href={n.it.url}>{catIcon(n.it.url.replace(/\//g, '')) && <img src={catIcon(n.it.url.replace(/\//g, ''))!.replace('/ik/', '/ik/s/')} alt="" width="30" height="30" loading="lazy" />}{n.it.title.replace(/^[^\p{L}]+/u, '')}</a> : <b>{n.it.title}</b>}
 							{n.kids.length > 0 && <ul>{n.kids.map((k) => <li><a href={k.url}>{k.title}</a></li>)}</ul>}
 						</div>
 					))}
@@ -48,12 +48,12 @@ const q = (Astro.url.searchParams.get('s') ?? '').trim().toLowerCase();
 			<div class="hs__s" id="hs-s" role="listbox" hidden></div>
 		</div>
 		<div class="hl__akce">
-			<a class="hl__a" href="/lihoviny/?orderby=disc" rel="nofollow"><img src={ikona('akce')} alt="" width="28" height="28" /><span>Akce</span></a>
-			<a class="hl__a" href="/alkohol-kalkulacka/"><img src={ikona('kalkulacka')} alt="" width="28" height="28" /><span>Kalkulačka</span></a>
-			<a class="hl__a" href="/blog/"><img src={ikona('magazin')} alt="" width="28" height="28" /><span>Magazín</span></a>
+			<a class="hl__a" href="/lihoviny/?orderby=disc" rel="nofollow"><img src={ikona('akce', true)} alt="" width="28" height="28" /><span>Akce</span></a>
+			<a class="hl__a" href="/alkohol-kalkulacka/"><img src={ikona('kalkulacka', true)} alt="" width="28" height="28" /><span>Kalkulačka</span></a>
+			<a class="hl__a" href="/blog/"><img src={ikona('magazin', true)} alt="" width="28" height="28" /><span>Magazín</span></a>
 		</div>
 	</div>
 	<nav class="kn" aria-label="Hlavní kategorie">
-		<ul>{QUICK.map(([u, t, i]) => <li><a href={u}><img src={ikona(i)} alt="" width="40" height="40" />{t}</a></li>)}</ul>
+		<ul>{QUICK.map(([u, t, i]) => <li><a href={u}><img src={ikona(i, true)} alt="" width="40" height="40" />{t}</a></li>)}</ul>
 	</nav>
 </header>

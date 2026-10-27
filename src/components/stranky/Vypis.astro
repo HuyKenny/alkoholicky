@@ -45,7 +45,7 @@ const plain = withFilter(f, { min: undefined, max: undefined, znacka: [], obchod
 ---
 <div class="w">
 	<Drobky items={crumbs} />
-	<div class="lh"><h1>{icon && <img class="lh__ik" src={icon} alt="" width="64" height="64" />}{h1}</h1><span class="lh__n">{cislo(total)} {produktu(total)}</span></div>
+	<div class="lh"><h1>{icon && <img class="lh__ik" src={icon} alt="" width="64" height="64" fetchpriority="low" />}{h1}</h1><span class="lh__n">{cislo(total)} {produktu(total)}</span></div>
 	{introHtml && (stripTags(introHtml).length > 260 ? <><div class="intro je-zav" set:html={introHtml} /><button type="button" class="vice" aria-expanded="false" data-vice>Zobrazit více</button></> : <div class="intro" set:html={introHtml} />)}
 	{tiles.length > 0 && (
 		<nav class="podk" aria-label={tilesTitle}>

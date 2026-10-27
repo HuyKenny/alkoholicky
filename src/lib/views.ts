@@ -224,6 +224,8 @@ export async function productView(db: D1Database, id: number) {
         offers: {
           '@type': 'AggregateOffer', priceCurrency: 'CZK', lowPrice: String(Math.round(stats.min)), highPrice: String(Math.round(stats.max)), offerCount: String(stats.n),
           availability: inStock.length ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock', itemCondition: 'https://schema.org/NewCondition', url,
+          // Rank Math filter on WordPress: Google warns about offers without it; prices are refreshed nightly
+          priceValidUntil: new Date(Date.now() + 30 * 86400_000).toISOString().slice(0, 10),
         },
       } : {}),
     }] : []),
