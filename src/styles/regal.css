@@ -248,3 +248,13 @@ h2 { font-weight: 750; letter-spacing: -.015em; }
 .lh { align-items: center; }
 @media (max-width: 639px) { .lh__ik { width: 46px; height: 46px; } }
 .ga__m img { object-position: 50% 100%; }
+.k__img { overflow: visible; }
+.k__s { right: -6px; top: -8px; }
+.k__b.btn--o { background: #fff; color: var(--ink); }
+.k__b.btn--o:hover { background: var(--mata); }
+.k__b:not(.btn--o):not(.btn--g) { background: var(--zel); color: #fff; }
+@media (max-width: 699px) {
+	.hero__s { display: grid; grid-template-columns: 1fr 1fr; }
+	.hero__s li { transform: none !important; }
+	.hero__s li:nth-child(n+3) { display: none; }
+}
