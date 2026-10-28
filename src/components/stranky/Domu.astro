@@ -45,6 +45,7 @@ const graph = [
 const jsonLd: unknown[] = [];
 ---
 <Base title={title} description={description} canonical={BASE + '/'} robots={robots(false)} ogType="website" ogImage={OG_HOME} graph={graph} jsonLd={jsonLd} pageType="home" searchAction={true}>
+	<link slot="head" rel="preload" as="image" href="/a/regal-480.webp" imagesrcset="/a/regal-480.webp 480w, /a/regal-640.webp 640w, /a/regal-1100.webp 1100w" imagesizes="(min-width: 960px) 620px, 240px" fetchpriority="high" />
 	<section class="hero">
 		<div class="w">
 			<div>
