@@ -276,6 +276,9 @@ p { margin: 0 0 1em; }
 .ot__s { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .ot__s img { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--line); padding: 4px; background: #fff; }
 .ot__s > div { min-width: 0; }
+.ot__n { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; min-height: 30px; }
+.ot__s img.ot__lg { width: auto; height: auto; max-width: 112px; max-height: 30px; padding: 0; border: 0; border-radius: 0; object-fit: contain; object-position: left center; }
+.ot__nej { margin-left: 0; }
 .ot__s b { display: block; font-weight: 650; }
 .ot__s small { display: block; color: var(--ink3); font-size: .8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ot__dv { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .84rem; color: var(--ink2); }

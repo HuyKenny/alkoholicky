@@ -160,6 +160,7 @@ h2 { font-weight: 750; letter-spacing: -.015em; }
 .ot > li { border-top: 1.5px dashed var(--sit); }
 .ot > li:first-child { background: var(--zlata-l); }
 .ot__s img { width: 36px; height: 36px; border: 2px solid var(--ink); border-radius: 8px; padding: 4px; }
+.ot__s img.ot__lg { width: auto; height: auto; max-width: 120px; max-height: 32px; border: 0; padding: 0; border-radius: 0; }
 .ot__s b { font-family: var(--disp); font-size: 1.02rem; }
 .ot__c { font-size: 1.3rem; }
 .ot__nej { background: var(--zel); color: #fff; border-radius: 999px; padding: 2px 8px; }
