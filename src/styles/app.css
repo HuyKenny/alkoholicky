@@ -436,7 +436,8 @@ p { margin: 0 0 1em; }
 /* footer */
 .pa-t { margin-top: 64px; background: var(--bg2); border-top: 1px solid var(--line); font-size: .9rem; }
 .pa-t__in { display: grid; gap: 26px; padding-top: 36px; padding-bottom: 28px; }
-@media (min-width: 800px) { .pa-t__in { grid-template-columns: 1.4fr 1fr 1fr 1fr; } }
+@media (min-width: 800px) { .pa-t__in { grid-template-columns: 1.3fr 1fr 1fr 1fr 1fr; } }
+@media (min-width: 560px) and (max-width: 799px) { .pa-t__in { grid-template-columns: 1fr 1fr; } .pa-t__in > div { grid-column: 1 / -1; } }
 .pa-t h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink3); margin-bottom: 10px; }
 .pa-t ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .pa-t a:hover { color: var(--c); text-decoration: underline; }
