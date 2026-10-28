@@ -45,7 +45,7 @@ const graph = [
 const jsonLd: unknown[] = [];
 ---
 <Base title={title} description={description} canonical={BASE + '/'} robots={robots(false)} ogType="website" ogImage={OG_HOME} graph={graph} jsonLd={jsonLd} pageType="home" searchAction={true}>
-	<link slot="head" rel="preload" as="image" href="/a/regal-480.webp" imagesrcset="/a/regal-480.webp 480w, /a/regal-640.webp 640w, /a/regal-1100.webp 1100w" imagesizes="(min-width: 960px) 620px, 240px" fetchpriority="high" />
+	<link slot="head" rel="preload" as="image" media="(min-width: 960px)" href="/a/regal-640.webp" imagesrcset="/a/regal-640.webp 640w, /a/regal-1100.webp 1100w" imagesizes="620px" fetchpriority="high" />
 	<section class="hero">
 		<div class="w">
 			<div>
@@ -68,7 +68,8 @@ const jsonLd: unknown[] = [];
 				<li>ceny aktualizujeme <b>každý den</b></li>
 			</ul>
 			</div>
-			<img class="hero__img" src="/a/regal-640.webp" srcset="/a/regal-480.webp 480w, /a/regal-640.webp 640w, /a/regal-1100.webp 1100w" sizes="(min-width: 960px) 620px, 240px" alt="" width="1100" height="804" fetchpriority="high" decoding="async" />
+			<!-- mobile: no hero illustration (the category shelf above carries the drawings; keeps LCP on the text) -->
+			<picture class="hero__pic"><source media="(max-width: 959px)" srcset="data:image/gif;base64,R0lGODlhAQABAAAAACw=" /><img class="hero__img" src="/a/regal-640.webp" srcset="/a/regal-640.webp 640w, /a/regal-1100.webp 1100w" sizes="620px" alt="" width="1100" height="804" fetchpriority="high" decoding="async" /></picture>
 		</div>
 	</section>
 
