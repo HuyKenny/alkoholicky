@@ -116,7 +116,7 @@ const jsonLd: unknown[] = [];
 				<div class="sek__h"><h2 id="h-ob"><img src={ikona('doprava', true)} alt=\"\" width=\"44\" height="44" loading="lazy" />Obchody, které porovnáváme</h2></div>
 				<ul class="ob">{shops.map(([d, n]) => { const l = shopLogo(d); return (
 					<li style={`--ob:${shopColor(d)}`}>
-						<span class="ob__l">{l ? <img class="ob__logo" src={l.src} alt={shopName(d)} width={l.w} height={l.h} loading="lazy" decoding="async" /> : <><img src={shopIcon(d)} alt="" width="24" height="24" loading="lazy" decoding="async" /><b>{shopName(d)}</b></>}</span>
+						<span class="ob__l">{l ? <><img class="ob__logo" src={l.src} alt={shopName(d)} width={l.w} height={l.h} loading="lazy" decoding="async" />{l.w / l.h < 1.4 && <b>{shopName(d)}</b>}</> : <><img src={shopIcon(d)} alt="" width="24" height="24" loading="lazy" decoding="async" /><b>{shopName(d)}</b></>}</span>
 						<small>{cislo(n)} produktů</small>
 					</li>
 				); })}</ul>
