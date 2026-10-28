@@ -1,5 +1,5 @@
 // Resolves every root path the way WordPress did on alkoholicky.cz:
-//   /<slug>/                → product | product category | post | page | blog category (slugs table, product wins)
+//   /<slug>/                → product | product category | facet landing | post | page | blog category (slugs table, product wins)
 //   /<slug>/page/<n>/       → paged product category / blog category / the blog page
 //   /page/<n>/?s=…          → paged search
 //   unknown /<slug>/        → 301 to an unambiguous continuation of a cut-off slug (db.guessSlug), else to the most
@@ -10,7 +10,7 @@ import { guessListing } from './guess';
 const JUNK = /\.[a-z0-9]{2,5}$|^\/(\.|wp-|cgi-bin|admin|administrator|phpmyadmin|xmlrpc|vendor|api\/|_)/i;
 
 export type Route =
-  | { kind: 'product' | 'category' | 'post' | 'page' | 'postcat'; id: number; page: number }
+  | { kind: 'product' | 'category' | 'facet' | 'post' | 'page' | 'postcat'; id: number; page: number }
   | { kind: 'blog'; page: number }
   | { kind: 'search'; page: number }
   | { kind: 'redirect'; to: string }
@@ -46,9 +46,12 @@ export async function dispatch(db: D1Database, pathname: string, sp: URLSearchPa
   const r = await resolveSlug(db, slug);
   if (r) {
     if (r.kind === 'page' && slug === 'blog') return { kind: 'blog', page };
-    if (page > 1 && r.kind !== 'category' && r.kind !== 'postcat') return { kind: 'notfound' };
+    if (page > 1 && r.kind !== 'category' && r.kind !== 'facet' && r.kind !== 'postcat') return { kind: 'notfound' };
     return { kind: r.kind as 'product', id: r.ref_id, page };
   }
+  // facet landings live in their own table (the slugs table has a CHECK on kind); a miss costs one indexed lookup
+  const fp = await db.prepare('SELECT id FROM facet_pages WHERE slug = ?').bind(slug).first<{ id: number }>().catch(() => null);
+  if (fp) return { kind: 'facet', id: fp.id, page };
   if (page === 1) {
     const g = await guessSlug(db, slug);
     if (g) return { kind: 'redirect', to: `/${encodeURIComponent(g)}/` };

@@ -10,8 +10,6 @@ import { BASE, OG_DEFAULT, PER_PAGE, POSTS_PER_PAGE, isoPrague } from './site';
 import { categoryTitle, descFrom, paged, postTitle, productTitle, rmTitle, robots, searchTitle, termTitle } from './seo';
 import { cislo, decode, stripTags } from './format';
 import { validImage } from './img';
-import { valueSlug } from './params';
-import { FASETY } from '../data/fasety';
 import postcatSeo from '../data/postcat-seo.json';
 
 export interface Meta {
@@ -43,24 +41,41 @@ function collection(url: string, title: string) {
 }
 
 // ---------- category ----------
-export async function categoryView(db: D1Database, catId: number, page: number, sp: URLSearchParams) {
-  const [cat, tree, fc, brands, imgs] = await Promise.all([loadCategory(db, catId), catTree(db), facets(db, `f:${catId}`), brandList(db), catImages(db)]);
-  if (!cat) return null;
+export interface FacetPage {
+  id: number; slug: string; base_slug: string; qs: string; h1: string; seo_title: string; seo_desc: string; intro_html: string; second_html: string;
+  faq_json: string; keyword: string; volume: number; min_products: number; total: number; noindex: number;
+}
+/** Facet landing = its base category with a preset filter (fp.qs) and its own texts; filters added by the visitor on top make it noindex like any filtered listing. */
+export async function facetView(db: D1Database, id: number, page: number, sp: URLSearchParams) {
+  const fp = await db.prepare('SELECT * FROM facet_pages WHERE id = ?').bind(id).first<FacetPage>();
+  if (!fp) return null;
+  const tree = await catTree(db);
+  const base = tree.bySlug.get(fp.base_slug);
+  if (!base) return null;
+  const merged = new URLSearchParams(fp.qs);
+  for (const k of new Set([...sp.keys()])) { merged.delete(k); for (const v of sp.getAll(k)) merged.append(k, v); }
+  return categoryView(db, base.id, page, merged, { fp, user: sp });
+}
+
+export async function categoryView(db: D1Database, catId: number, page: number, sp: URLSearchParams, facet?: { fp: FacetPage; user: URLSearchParams }) {
+  const [cat0, tree, fc, brands, imgs, lands] = await Promise.all([loadCategory(db, catId), catTree(db), facets(db, `f:${catId}`), brandList(db), catImages(db),
+    facet ? Promise.resolve([] as FacetPage[]) : db.prepare('SELECT * FROM facet_pages WHERE noindex = 0 AND total >= min_products AND base_slug = (SELECT slug FROM categories WHERE id = ?)').bind(catId).all<FacetPage>().then((r) => r.results).catch(() => [] as FacetPage[])]);
+  if (!cat0) return null;
+  const fp = facet?.fp;
+  // a facet shows its own texts instead of the category's; the icon and the tree position stay the base category's
+  const cat = fp ? { ...cat0, name: fp.h1, seo_title: fp.seo_title, seo_desc: fp.seo_desc, description_html: fp.intro_html, second_html: fp.second_html, guide_html: '', faq_json: fp.faq_json, seo_robots: '' } : cat0;
   const f = parseFilters(sp);
-  const filtered = isFiltered(f);
-  // facet landings of this category (src/data/fasety.ts) that are indexable: filter value → landing slug
+  const filtered = fp ? isFiltered(parseFilters(facet!.user)) : isFiltered(f);
+  // facet landings of this category: filter value → landing slug (the filter links lead to the clean URL)
   const landings: Record<string, string> = {};
-  for (const l of FASETY) {
-    const c = l.base === cat.slug && l.key ? tree.bySlug.get(l.slug) : undefined;
-    if (c && c.count_total >= 5 && !c.noindex) landings[`${l.key}=${l.key === 'brand' ? l.value : valueSlug(l.value!)}`] = l.slug;
-  }
+  for (const l of lands) { const k = only(parseFilters(new URLSearchParams(l.qs))); if (k) landings[k] = l.slug; }
   // the plain filter of exactly one landing value → 301 to the landing (one indexable URL per combination)
-  if (filtered && page === 1) {
+  if (!fp && filtered && page === 1) {
     const one = only(f);
     if (one && landings[one]) return { redirect: `/${landings[one]}/` } as const;
   }
   const q = toListQuery(f, page, brands, fc);
-  const { items, total } = await listProducts(db, { cat: cat.id }, q, cat.count_total);
+  const { items, total } = await listProducts(db, { cat: cat.id }, q, fp ? undefined : cat.count_total);
   const pages = Math.max(1, Math.ceil(total / PER_PAGE));
   if (page > pages) return null;
   const chain = ancestry(tree, cat.id);
@@ -73,13 +88,13 @@ export async function categoryView(db: D1Database, catId: number, page: number, 
     kidsTitle = 'Související kategorie';
   }
   kids = kids.sort((a, b) => b.count_total - a.count_total);
-  const base = `/${cat.slug}/`;
+  const base = fp ? `/${fp.slug}/` : `/${cat.slug}/`;
   const url = abs(pagePath(base, page));
   const title = categoryTitle(cat.name, cat.seo_title, page);
-  const crumbs: Crumb[] = [{ name: 'Domů', url: '/' }, ...chain.map((c) => ({ name: decode(c.name), url: `/${c.slug}/` }))];
+  const crumbs: Crumb[] = [{ name: 'Domů', url: '/' }, ...chain.map((c) => ({ name: decode(c.name), url: `/${c.slug}/` })), ...(fp ? [{ name: fp.h1, url: base }] : [])];
   // robots as on WordPress (live snapshot at the migration: thin categories outside the priority list are noindex),
   // plus an emptied category
-  const noindex = cat.noindex === 1 || cat.seo_robots.includes('noindex') || cat.count_total === 0;
+  const noindex = fp ? fp.noindex === 1 || total < fp.min_products : cat.noindex === 1 || cat.seo_robots.includes('noindex') || cat.count_total === 0;
   let faq: Array<{ q: string; a: string }> = [];
   try { faq = page === 1 && cat.faq_json ? JSON.parse(cat.faq_json) : []; } catch { /* broken JSON = no FAQ */ }
   const meta: Meta = {
@@ -100,7 +115,7 @@ export async function categoryView(db: D1Database, catId: number, page: number, 
   // gift categories link the seasonal guides (mu-plugin v2.6: Q4 corporate orders)
   const gift = ['darkove-boxy', 'darkove-baleni', 'darkova-baleni-alkoholu', 'darky-z-alkohol-cz', 'darkove-sady-na-vyrobu-alkoholu'].includes(cat.slug) && page === 1;
   return {
-    meta, cat, crumbs, items, total, page, pages, base, f, qs: toQuery(f), kids, kidsTitle, tree, fc, brands, imgs, landings, faq, gift,
+    meta, cat, crumbs, items, total, page, pages, base, f, qs: toQuery(fp ? parseFilters(facet!.user) : f), kids, kidsTitle, tree, fc, brands, imgs, landings, faq, gift,
     guide: page === 1 && !filtered ? cat.guide_html : '',
     isFiltered: filtered,
   };
@@ -108,7 +123,8 @@ export async function categoryView(db: D1Database, catId: number, page: number, 
 
 /** `key=value` when the filter state is a single brand or a single parameter value and nothing else, else null. */
 function only(f: ReturnType<typeof parseFilters>): string | null {
-  if (f.sort !== 'pop' || f.min !== undefined || f.max !== undefined || f.obchod.length || f.skladem || f.sleva || f.kat) return null;
+  if (f.sort !== 'pop' || f.min !== undefined || f.max !== undefined || f.obchod.length || f.skladem || f.kat) return null;
+  if (f.sleva) return f.znacka.length || Object.keys(f.p).length ? null : 'sleva=1';
   const ps = Object.entries(f.p);
   if (f.znacka.length === 1 && !ps.length) return `brand=${f.znacka[0]}`;
   if (!f.znacka.length && ps.length === 1 && ps[0]![1]!.length === 1) return `${ps[0]![0]}=${ps[0]![1]![0]}`;

@@ -18,7 +18,7 @@ const latest = (urls: U[]) => urls.reduce((m, u) => (u.mod > m ? u.mod : m), '')
 
 export async function collect(db: D1Database): Promise<Record<string, U[]>> {
   const all = async <T>(sql: string) => (await db.prepare(sql).all<T>()).results;
-  const [posts, pages, products, cats, brands, pcats] = await Promise.all([
+  const [posts, pages, products, cats, brands, pcats, facetRows] = await Promise.all([
     all<{ slug: string; m: string }>("SELECT slug, modified_at AS m FROM posts WHERE type = 'post' AND status = 'publish' AND noindex = 0 ORDER BY published_at DESC"),
     all<{ slug: string; m: string }>("SELECT slug, modified_at AS m FROM posts WHERE type = 'page' AND status = 'publish' AND noindex = 0 AND id NOT IN (699, 357) ORDER BY published_at DESC"),
     // only indexable products (with offers); lastmod = content change or the last change of the lowest price
@@ -31,6 +31,7 @@ export async function collect(db: D1Database): Promise<Record<string, U[]>> {
     all<{ slug: string; m: string }>(`SELECT b.slug, (SELECT MAX(p.updated_at) FROM brand_products x JOIN products p ON p.id = x.product_id WHERE x.brand_id = b.id) AS m
        FROM brands b WHERE b.noindex = 0 AND b.count >= 3 AND NOT EXISTS (SELECT 1 FROM slugs s WHERE s.slug = b.slug AND s.kind = 'product') ORDER BY b.count DESC`),
     all<{ slug: string; m: string }>(`SELECT c.slug, (SELECT MAX(modified_at) FROM posts p WHERE p.cat_id = c.id AND p.type = 'post' AND p.status = 'publish') AS m FROM post_categories c WHERE c.count > 0`),
+    all<{ slug: string; m: string }>("SELECT slug, updated_at AS m FROM facet_pages WHERE noindex = 0 AND total >= min_products ORDER BY volume DESC").catch(() => []),
   ]);
   const map = (rows: Array<{ slug: string; m: string }>, pre = '/') => rows.map((r) => ({ loc: `${BASE}${pre}${r.slug}/`, mod: utc(r.m) }));
   const out: Record<string, U[]> = {};
@@ -46,7 +47,8 @@ export async function collect(db: D1Database): Promise<Record<string, U[]>> {
   chunk('product-sitemap', map(products));
   out['category-sitemap'] = map(pcats);
   chunk('product_brand-sitemap', map(brands, '/znacka/'));
-  chunk('product_cat-sitemap', map(cats));
+  // facet landings sit in the category sitemap (one file, GSC-registered)
+  chunk('product_cat-sitemap', [...map(cats), ...map(facetRows)]);
   return out;
 }
 
