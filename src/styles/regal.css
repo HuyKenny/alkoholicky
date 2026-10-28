@@ -366,19 +366,27 @@ h2 { font-weight: 750; letter-spacing: -.015em; }
 .obsah .cp-foto { margin: 30px 0; }
 .obsah .cp-foto img { display: block; width: 100%; height: auto; border: 2px solid var(--ink); border-radius: var(--r2); box-shadow: var(--sh-s); }
 .obsah .cp-foto figcaption { margin-top: 8px; font-size: .82rem; color: var(--ink3); }
-.obsah .cp-tab { overflow-x: auto; margin: 26px 4px 30px 0; border: 2px solid var(--ink); border-radius: var(--r2); background: #fff; }
-.obsah .cp-tab table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: .92rem; }
-.obsah .cp-tab th { background: var(--zel); color: #fff; text-align: left; padding: 10px 14px; font-size: .8rem; letter-spacing: .02em; }
-.obsah .cp-tab td { padding: 11px 14px; border-top: 1.5px dashed var(--sit); vertical-align: top; }
-.obsah .cp-tab td:first-child { font-weight: 700; white-space: nowrap; }
-.obsah .cp-tab caption { caption-side: bottom; text-align: left; padding: 8px 14px; font-size: .8rem; color: var(--ink3); }
+.obsah .cp-tab { overflow-x: auto; margin: 26px 4px 30px 0; border: 2px solid var(--ink); border-radius: var(--r2); background: #fff; box-shadow: var(--sh-s); -webkit-overflow-scrolling: touch; }
+.obsah .cp-tab table { display: table; width: 100%; min-width: 520px; margin: 0; border-collapse: collapse; font-size: .95rem; line-height: 1.4; }
+.obsah .cp-tab th { background: var(--zel); color: #fff; text-align: left; padding: 11px 16px; font: 700 .78rem/1.2 var(--font); text-transform: uppercase; letter-spacing: .05em; border: 0; }
+.obsah .cp-tab td { padding: 12px 16px; border: 0; border-top: 1.5px dashed var(--sit); vertical-align: top; }
+.obsah .cp-tab tbody tr:first-child td { border-top: 0; }
+.obsah .cp-tab tbody tr:nth-child(even) td { background: var(--mata); }
+.obsah .cp-tab td:first-child { font-weight: 700; white-space: nowrap; color: var(--zel); }
+.obsah .cp-tab caption { caption-side: bottom; text-align: left; padding: 10px 16px; font-size: .8rem; color: var(--ink3); border-top: 1.5px dashed var(--sit); }
+/* bare tables (older articles, no .cp-tab wrapper): same look, scroll inside */
+.obsah > table, .obsah p + table { display: block; overflow-x: auto; margin: 26px 0 30px; border: 2px solid var(--ink); border-radius: var(--r2); }
+.obsah > table th { background: var(--zel); color: #fff; border: 0; padding: 11px 16px; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+.obsah > table td { border: 0; border-top: 1.5px dashed var(--sit); padding: 11px 16px; }
 .obsah .cp-meta { margin: -6px 0 18px; font-size: .88rem; color: var(--ink3); }
 .obsah .cp-meta a { font-weight: 600; }
 .obsah .cp-note { font-size: .86rem; color: var(--ink3); margin-top: 28px; }
 @media (max-width: 640px) {
-	.obsah .cp-tab table { min-width: 0; font-size: .85rem; }
-	.obsah .cp-tab th, .obsah .cp-tab td { padding: 9px 10px; }
-	.obsah .cp-tab td:first-child { white-space: normal; }
+	.obsah .cp-tab { margin-right: 0; }
+	.obsah .cp-tab table { min-width: 0; font-size: .9rem; }
+	.obsah .cp-tab th { padding: 9px 10px; font-size: .7rem; letter-spacing: .03em; }
+	.obsah .cp-tab td { padding: 10px; }
+	.obsah .cp-tab caption { padding: 8px 10px; }
 	.obsah .cp-pull { font-size: 1.2rem; padding-left: 16px; }
 	.obsah .cp-lead { font-size: 1.05rem; }
 }
