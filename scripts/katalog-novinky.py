@@ -624,6 +624,10 @@ def main():
     for k, pid in key_rows.items():
         sql.append(f"INSERT OR IGNORE INTO product_keys (key, product_id) VALUES ({q(k)}, {pid});")
     if created:
+        # a new product may reuse the slug of an old WordPress product that was redirected to a category (5 673 such 301s) —
+        # the product wins, otherwise its page is unreachable and the sitemap lists a redirect
+        sql.append("DELETE FROM redirects WHERE from_path IN (SELECT '/' || slug || '/' FROM slugs WHERE kind IN ('product', 'category', 'post', 'page'));")
+    if created:
         # category counters drive the listing totals, noindex of thin categories and the sitemaps
         sql.append("UPDATE categories SET count_total = (SELECT COUNT(*) FROM cat_products x JOIN products p ON p.id = x.product_id WHERE x.cat_id = categories.id AND p.status = 'publish'), "
                    "count_direct = (SELECT COUNT(*) FROM cat_products x JOIN products p ON p.id = x.product_id WHERE x.cat_id = categories.id AND x.direct = 1 AND p.status = 'publish');")
