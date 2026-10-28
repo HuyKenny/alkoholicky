@@ -76,7 +76,7 @@ const jsonLd: unknown[] = [];
 		<section class="sek" id="kategorie" aria-labelledby="h-kat">
 			<div class="sek__h"><h2 id="h-kat">Co dnes hledáte?</h2></div>
 			<ul class="kt">
-				{tiles.map((t, i) => <li><a href={`/${t.slug}/`}><img src={t.img} alt="" width="92" height="92" loading={i < 6 ? 'eager' : 'lazy'} decoding="async" /><b>{t.label}</b><small>{cislo(t.count)} produktů</small></a></li>)}
+				{tiles.map((t) => <li><a href={`/${t.slug}/`}><img src={t.img} alt="" width="92" height="92" loading="lazy" decoding="async" /><b>{t.label}</b><small>{cislo(t.count)} produktů</small></a></li>)}
 			</ul>
 		</section>
 
