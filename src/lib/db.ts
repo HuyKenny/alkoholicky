@@ -220,6 +220,9 @@ export async function postsBySlugs(db: D1Database, slugs: string[]): Promise<Pos
   const by = new Map(rows.map((r) => [r.slug, r]));
   return slugs.map((s) => by.get(s)).filter((x): x is PostCard => !!x);
 }
+export async function latestPosts(db: D1Database, n = 4): Promise<PostCard[]> {
+  return (await db.prepare(`SELECT ${POST_CARD} FROM posts WHERE type = 'post' AND status = 'publish' ORDER BY published_at DESC LIMIT ?`).bind(n).all<PostCard>()).results;
+}
 export async function relatedPosts(db: D1Database, post: Post, n = 4): Promise<PostCard[]> {
   return (await db.prepare(`SELECT ${POST_CARD} FROM posts WHERE type = 'post' AND status = 'publish' AND id <> ? AND cat_id = ? ORDER BY published_at DESC LIMIT ?`).bind(post.id, post.cat_id, n).all<PostCard>()).results;
 }
