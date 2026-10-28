@@ -19,7 +19,7 @@ export interface Offer {
   id: number; feed: string; title: string; domain: string; price: number; price_old: number; stock: number;
   go_slug: string; updated_at: string; img: string; delivery_price: number | null;
 }
-export interface Brand { id: number; slug: string; name: string; description_html: string; count: number; noindex: number; second_html: string; seo_title: string; seo_desc: string }
+export interface Brand { id: number; slug: string; name: string; description_html: string; count: number; noindex: number; second_html: string; seo_title: string; seo_desc: string; faq_json?: string }
 export interface Post {
   id: number; type: 'post' | 'page'; slug: string; title: string; content_html: string; excerpt: string;
   published_at: string; modified_at: string; cat_id: number; image: string; image_card: string; image_alt: string; image_w: number; image_h: number;

@@ -150,15 +150,17 @@ export async function brandView(db: D1Database, slug: string, page: number, sp: 
   // WordPress indexed every brand with a product (Rank Math default); the sitemap lists those with ≥ 3
   const thin = b.noindex === 1 || b.count < 1;
   const crumbs: Crumb[] = [{ name: 'Domů', url: '/' }, { name: decode(b.name), url: base }];
+  let faq: Array<{ q: string; a: string }> = [];
+  try { faq = page === 1 && b.faq_json ? JSON.parse(b.faq_json) : []; } catch { /* broken JSON = no FAQ */ }
   const meta: Meta = {
     title, description: descFrom(b.seo_desc, '', {}, brandSeo(b).desc, page),
     ...(thin || filtered ? {} : { canonical: url }), robots: filtered ? ['noindex', 'follow'] : robots(thin),
     ...(page > 1 && !filtered ? { prev: abs(pagePath(base, page - 1)) } : {}),
     ...(page < pages && !filtered ? { next: abs(pagePath(base, page + 1)) } : {}),
-    graph: [collection(url, title)],
+    graph: [faq.length ? { ...collection(url, title), '@type': 'FAQPage', mainEntity: faq.map((x) => ({ '@type': 'Question', name: stripTags(x.q), acceptedAnswer: { '@type': 'Answer', text: stripTags(x.a) } })) } : collection(url, title)],
     jsonLd: [breadcrumbLd(crumbs), itemListLd(abs(base), decode(b.name), items)].filter(Boolean),
   };
-  return { meta, brand: b, crumbs, items, total, page, pages, base, f, qs: toQuery(f), tree, fc, brands, isFiltered: filtered };
+  return { meta, faq, brand: b, crumbs, items, total, page, pages, base, f, qs: toQuery(f), tree, fc, brands, isFiltered: filtered };
 }
 
 /** mu-plugin ah_claude_brand_seo (v2.0): title/description of brands without their own Rank Math texts. */

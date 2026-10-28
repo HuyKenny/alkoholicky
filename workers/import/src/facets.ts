@@ -73,7 +73,7 @@ export async function rebuildFacets(db: D1Database, day: string): Promise<Record
   }
   for (const [id, f] of brand) { f.c = desc(f.c!).slice(0, 30); f.s = desc(f.s); stmts.push(put(db, `fb:${id}`, JSON.stringify(f), now)); }
 
-  // 4. homepage + category photos
+  // 4. homepage + category photos (the deals block is alcohol only: no non-alcoholic category or product)
   const pick = (rows: Array<{ id: number; c: number }>, n: number) => {
     const per = new Map<number, number>(); const out: number[] = [];
     for (const r of rows) { const k = per.get(r.c) ?? 0; if (k >= 2) continue; per.set(r.c, k + 1); out.push(r.id); if (out.length >= n) break; }
@@ -81,7 +81,8 @@ export async function rebuildFacets(db: D1Database, day: string): Promise<Record
   };
   const card = `status = 'publish' AND noindex = 0 AND offer_count > 0 AND in_stock = 1 AND image <> ''`;
   const [deals, popular, topBrands, topShops, totals, catImg] = await Promise.all([
-    all<{ id: number; c: number }>(`SELECT id, primary_cat AS c FROM products WHERE ${card} AND disc_pct >= 10 ORDER BY disc_pct DESC, pop DESC LIMIT 300`),
+    all<{ id: number; c: number }>(`WITH RECURSIVE na(id) AS (SELECT id FROM categories WHERE slug = 'nealko' OR slug LIKE '%nealko%' UNION SELECT c.id FROM categories c JOIN na ON c.parent = na.id)
+      SELECT id, primary_cat AS c FROM products WHERE ${card} AND disc_pct >= 10 AND primary_cat NOT IN (SELECT id FROM na) AND name NOT LIKE '%nealko%' ORDER BY disc_pct DESC, pop DESC LIMIT 300`),
     all<{ id: number; c: number }>(`SELECT id, primary_cat AS c FROM products WHERE ${card} ORDER BY pop DESC, shop_count DESC LIMIT 300`),
     // one grouped pass (a correlated SUM per brand hit the D1 CPU limit with 1 000 brands × 23k products)
     all<{ id: number; n: number }>(`SELECT b.id, b.count AS n FROM brands b JOIN (SELECT brand_id, SUM(pop) AS s FROM products GROUP BY brand_id) t ON t.brand_id = b.id
