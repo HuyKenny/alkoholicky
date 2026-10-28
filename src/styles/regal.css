@@ -381,3 +381,5 @@ h2 { font-weight: 750; letter-spacing: -.015em; }
 	.obsah .cp-pull { font-size: 1.2rem; padding-left: 16px; }
 	.obsah .cp-lead { font-size: 1.05rem; }
 }
+.obsah .cp-btn { display: inline-block; padding: 10px 16px; min-height: 44px; border: 2px solid var(--ink); background: var(--gold, #E9A825); color: var(--ink); font-weight: 700; text-decoration: none; box-shadow: 3px 3px 0 var(--ink); }
+.obsah code { font-size: .88em; word-break: break-all; }

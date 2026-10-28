@@ -24,7 +24,7 @@ export function ga4Footer(id: string, pageType: string): string {
 	<div class="alk-consent__b">
 		<button type="button" data-alk-consent="1" class="alk-consent__yes">Souhlasím</button>
 		<button type="button" data-alk-consent="0" class="alk-consent__no">Jen nezbytné</button>
-		<a href="/zasadach-ochrany-osobnich-udaju/" class="alk-consent__l">Více</a>
+		<a href="/cookies/" class="alk-consent__l">Více</a>
 	</div>
 </div>
 <script id="alk-ga4-events">
@@ -42,9 +42,29 @@ export function ga4Footer(id: string, pageType: string): string {
 			var yes=b.getAttribute('data-alk-consent')==='1';
 			store(KEY,yes?'1':'0');
 			if(window.gtag){gtag('consent','update',{analytics_storage:yes?'granted':'denied'});}
+			if(!yes){dropGa();}
 			box.style.display='none';
 		});
 	}
+	// Withdrawing consent also removes the GA cookies already set on this domain.
+	function dropGa(){
+		var parts=location.hostname.split('.'),hosts=[location.hostname];
+		if(parts.length>2){hosts.push(parts.slice(-2).join('.'));}
+		document.cookie.split(';').forEach(function(c){
+			var n=c.split('=')[0].trim();
+			if(n!=='_ga'&&n.indexOf('_ga_')!==0&&n!=='_gid'){return;}
+			hosts.concat(['.'+hosts[hosts.length-1]]).forEach(function(h){document.cookie=n+'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain='+h;});
+			document.cookie=n+'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+		});
+	}
+	// "Change cookie settings" link on the legal pages.
+	document.addEventListener('click',function(e){
+		var o=e.target&&e.target.closest?e.target.closest('[data-alk-consent-open]'):null;
+		if(!o){return;}
+		e.preventDefault();
+		try{localStorage.removeItem(KEY);}catch(x){}
+		if(box){box.style.display='';}
+	});
 	document.addEventListener('click',function(e){
 		if(!e.target||!e.target.closest){return;}
 		var a=e.target.closest('a[href]');
