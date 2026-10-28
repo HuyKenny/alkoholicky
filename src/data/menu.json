@@ -495,5 +495,61 @@
   "title": "Whisky se slevou",
   "url": "/whisky-a-ochucene-whisky/?sleva=1",
   "order": 903
+ },
+ {
+  "id": 950,
+  "parent": 0,
+  "title": "Vánoce",
+  "url": "",
+  "order": 905
+ },
+ {
+  "id": 951,
+  "parent": 950,
+  "title": "Vánoční průvodce",
+  "url": "/vanoce/",
+  "order": 906
+ },
+ {
+  "id": 952,
+  "parent": 950,
+  "title": "Dárky do 500 Kč",
+  "url": "/darky-s-alkoholem-do-500-kc/",
+  "order": 907
+ },
+ {
+  "id": 953,
+  "parent": 950,
+  "title": "Dárky do 1 000 Kč",
+  "url": "/darky-s-alkoholem-do-1000-kc/",
+  "order": 908
+ },
+ {
+  "id": 954,
+  "parent": 950,
+  "title": "Adventní kalendáře",
+  "url": "/adventni-kalendar-s-alkoholem/",
+  "order": 909
+ },
+ {
+  "id": 955,
+  "parent": 950,
+  "title": "Svařák a punč",
+  "url": "/svarak-recept-koreni-a-nejcastejsi-chyby/",
+  "order": 910
+ },
+ {
+  "id": 956,
+  "parent": 950,
+  "title": "Vaječný likér",
+  "url": "/vajecny-liker-ze-salka/",
+  "order": 911
+ },
+ {
+  "id": 957,
+  "parent": 950,
+  "title": "Co pít na Silvestra",
+  "url": "/co-pit-na-silvestra/",
+  "order": 912
  }
 ]
