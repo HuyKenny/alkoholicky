@@ -29,6 +29,7 @@ const specs = PARAM_ORDER.filter((k) => v.params[k]?.length).map((k) => [PARAM_L
 const disc = best && best.price_old > best.price ? Math.round((1 - best.price / best.price_old) * 100) : 0;
 ---
 <Base title={m.title} description={m.description} canonical={m.canonical} robots={m.robots} ogType={m.ogType} ogImage={m.ogImage} graph={m.graph} jsonLd={m.jsonLd} extraMeta={m.extraMeta} pageType="product">
+	{main && <link slot="head" rel="preload" as="image" href={main.src} imagesrcset={main.srcset} imagesizes="(min-width: 960px) 480px, calc(100vw - 32px)" fetchpriority="high" />}
 	<div class="w">
 		<Drobky items={v.crumbs} />
 		<section class="pd">
