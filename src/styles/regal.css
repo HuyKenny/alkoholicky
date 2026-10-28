@@ -310,3 +310,47 @@ h2 { font-weight: 750; letter-spacing: -.015em; }
 	.fo__l { min-height: 44px; }
 	.fl .fc input, .fl input[type="number"], .fl input[type="text"], .fl select { font-size: 1rem; min-height: 44px; }
 }
+
+/* article modules (.ahp*, formerly inline <style> in 36 posts, each with its own colours) — one look in the shelf palette (29. 10.) */
+.obsah .ahp { color: inherit; }
+.obsah .ahp a { color: var(--c); }
+.obsah .ahp-lead { font-size: 1.08rem; line-height: 1.65; margin: 0 0 20px; }
+.obsah .ahp-box, .obsah .ahp-verdict { background: var(--zlata-l); border: 2px solid var(--ink); border-radius: var(--r2); padding: 16px 18px; margin: 22px 4px 26px 0; box-shadow: var(--sh-s); }
+.obsah .ahp-verdict h3 { margin-top: 0; }
+.obsah .ahp-picks, .obsah .ahpc { display: grid; gap: 14px; margin: 22px 0 28px; padding-right: 4px; padding-bottom: 4px; }
+.obsah .ahp-picks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.obsah .ahp-pick, .obsah .ahpc-item, .obsah .ahp-card, .obsah .ahp-faq details { background: #fff; border: 2px solid var(--ink); border-radius: var(--r2); padding: 14px 16px; box-shadow: var(--sh-s); }
+.obsah .ahp-pick b { display: block; font-size: .78rem; color: var(--ink2); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+.obsah .ahp-pick a, .obsah .ahpc-name { font-family: var(--disp); font-weight: 700; color: var(--ink); text-decoration: none; }
+.obsah .ahp-pick span { display: block; margin-top: 8px; color: var(--ink2); font-size: .9rem; line-height: 1.45; }
+.obsah .ahpc-name { display: block; margin-bottom: 8px; }
+.obsah .ahpc-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; }
+.obsah .ahpc-per, .obsah .ahpc-note, .obsah .ahp-note { color: var(--ink2); font-size: .88rem; }
+.obsah .ahp-table-wrap { overflow-x: auto; margin: 24px 0; border: 2px solid var(--ink); border-radius: var(--r2); }
+.obsah .ahp-table { width: 100%; border-collapse: collapse; background: #fff; min-width: 640px; }
+.obsah .ahp-table th { background: var(--zel); color: #fff; text-align: left; padding: 11px 14px; font-size: .82rem; }
+.obsah .ahp-table td { padding: 12px 14px; border-top: 1.5px dashed var(--sit); vertical-align: top; }
+.obsah .ahp-table td:first-child { font-weight: 700; }
+.obsah .ahp-grid { display: grid; gap: 18px; margin: 24px 0; padding-right: 4px; padding-bottom: 4px; }
+.obsah .ahp-card { display: grid; grid-template-columns: 170px 1fr; padding: 0; overflow: hidden; }
+.obsah .ahp-card__img { display: flex; align-items: center; justify-content: center; background: #fff; min-height: 200px; border-right: 1.5px dashed var(--sit); }
+.obsah .ahp-card__img img { max-width: 140px; max-height: 180px; width: auto; height: auto; object-fit: contain; border-radius: 0; }
+.obsah .ahp-card__body { padding: 16px; }
+.obsah .ahp-card__tag { display: inline-block; background: var(--zlata); color: var(--ink); font-weight: 700; font-size: .75rem; padding: 4px 10px; border-radius: 999px; margin-bottom: 8px; }
+.obsah .ahp-card h3 { margin: 0 0 8px; font-size: 1.1rem; }
+.obsah .ahp-card p { margin: 0 0 12px; }
+.obsah .ahp-card dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 14px; }
+.obsah .ahp-card dt { font-size: .75rem; color: var(--ink3); }
+.obsah .ahp-card dd { margin: 2px 0 0; font-weight: 700; }
+.obsah .ahp-btn, .obsah .ahpc-btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; background: var(--brus); color: #fff !important; font-weight: 700; border: 2px solid var(--ink); border-radius: 999px; text-decoration: none; white-space: nowrap; }
+.obsah .ahpc-btn { margin-left: auto; }
+.obsah .ahp-faq details { margin: 10px 4px 10px 0; }
+.obsah .ahp-faq summary { cursor: pointer; font-weight: 700; min-height: 24px; }
+.obsah .ahp-faq p { margin: 10px 0 0; }
+@media (max-width: 760px) {
+	.obsah .ahp-picks { grid-template-columns: 1fr; }
+	.obsah .ahp-card { grid-template-columns: 1fr; }
+	.obsah .ahp-card__img { border-right: 0; border-bottom: 1.5px dashed var(--sit); }
+	.obsah .ahp-card dl { grid-template-columns: 1fr 1fr; }
+	.obsah .ahp-lead { font-size: 1rem; }
+}
