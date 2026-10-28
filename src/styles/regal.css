@@ -354,3 +354,30 @@ h2 { font-weight: 750; letter-spacing: -.015em; }
 	.obsah .ahp-card dl { grid-template-columns: 1fr 1fr; }
 	.obsah .ahp-lead { font-size: 1rem; }
 }
+
+/* copywriting article elements (29. 10.): lead, pull quote, editor's tip, clean table, photo with caption, product mention */
+.obsah .cp-lead { font-size: 1.14rem; line-height: 1.62; color: var(--ink); margin: 0 0 22px; }
+.obsah .cp-pull { margin: 34px 0; padding: 4px 0 4px 20px; border-left: 6px solid var(--zlata); font-family: var(--disp); font-weight: 700; font-size: 1.4rem; line-height: 1.28; color: var(--zel); }
+.obsah .cp-pull cite { display: block; margin-top: 10px; font: 500 .85rem var(--font); color: var(--ink3); font-style: normal; }
+.obsah .cp-tip { background: var(--zlata-l); border: 2px solid var(--ink); border-radius: var(--r2); box-shadow: var(--sh-s); padding: 16px 18px; margin: 30px 4px 32px 0; }
+.obsah .cp-tip b { display: block; font-family: var(--disp); font-size: 1.02rem; margin-bottom: 4px; }
+.obsah .cp-tip p { margin: 0; }
+.obsah .cp-foto { margin: 30px 0; }
+.obsah .cp-foto img { display: block; width: 100%; height: auto; border: 2px solid var(--ink); border-radius: var(--r2); box-shadow: var(--sh-s); }
+.obsah .cp-foto figcaption { margin-top: 8px; font-size: .82rem; color: var(--ink3); }
+.obsah .cp-tab { overflow-x: auto; margin: 26px 4px 30px 0; border: 2px solid var(--ink); border-radius: var(--r2); background: #fff; }
+.obsah .cp-tab table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: .92rem; }
+.obsah .cp-tab th { background: var(--zel); color: #fff; text-align: left; padding: 10px 14px; font-size: .8rem; letter-spacing: .02em; }
+.obsah .cp-tab td { padding: 11px 14px; border-top: 1.5px dashed var(--sit); vertical-align: top; }
+.obsah .cp-tab td:first-child { font-weight: 700; white-space: nowrap; }
+.obsah .cp-tab caption { caption-side: bottom; text-align: left; padding: 8px 14px; font-size: .8rem; color: var(--ink3); }
+.obsah .cp-meta { margin: -6px 0 18px; font-size: .88rem; color: var(--ink3); }
+.obsah .cp-meta a { font-weight: 600; }
+.obsah .cp-note { font-size: .86rem; color: var(--ink3); margin-top: 28px; }
+@media (max-width: 640px) {
+	.obsah .cp-tab table { min-width: 0; font-size: .85rem; }
+	.obsah .cp-tab th, .obsah .cp-tab td { padding: 9px 10px; }
+	.obsah .cp-tab td:first-child { white-space: normal; }
+	.obsah .cp-pull { font-size: 1.2rem; padding-left: 16px; }
+	.obsah .cp-lead { font-size: 1.05rem; }
+}
