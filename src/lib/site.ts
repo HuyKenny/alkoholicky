@@ -3,6 +3,8 @@
 export const BASE = 'https://alkoholicky.cz';
 export const SITE_NAME = 'Alkoholický';
 export const GA4_ID = 'G-6LMH2TME9J';
+/** Operator (fyzická osoba, ŽL od 6. 2. 2019, neplátce DPH); same text as in obchodni-podminky and zasadach-ochrany-osobnich-udaju. */
+export const OPERATOR = { name: 'Ha Duy Huy', ico: '07876823', street: 'Bartáková 36', zip: '140 00', city: 'Praha', email: 'info@alkoholicky.cz' };
 export const LOGO_URL = BASE + '/wp-content/uploads/2026/06/ah-logo-2026.png';
 /** Share image for pages without their own photo (homepage photo on WordPress). */
 export const OG_DEFAULT = BASE + '/wp-content/uploads/2022/11/wine-g43b983d30_1920.jpg';

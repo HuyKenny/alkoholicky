@@ -293,3 +293,20 @@ h2 { font-weight: 750; letter-spacing: -.015em; }
 /* shop logos from KuponMat (public/a/ob, 28. 10.): full logo, no frame; favicon + name only as a fallback */
 .ob__l { height: 48px; }
 .ob__l .ob__logo { width: auto; height: auto; max-width: 132px; max-height: 44px; border: 0; padding: 0; border-radius: 0; object-fit: contain; }
+
+/* mobile touch targets (29. 10.): ≥ 44 px, 16 px inputs (iOS does not zoom) */
+@media (max-width: 959px), (pointer: coarse) {
+	.mm__sk li a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; }
+	.mm__sk ul { gap: 0 14px; }
+	.mm__sk > a, .mm__sk > b { padding: 10px 0; }
+	.gr__t label { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; }
+	.str a, .str span { min-width: 44px; height: 44px; }
+	.alk-consent__b button { min-height: 44px; }
+	.alk-consent__l { display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; }
+	.rz a { display: inline-flex; align-items: center; min-height: 44px; }
+	.vice { min-height: 44px; }
+	.k__b, .btn, .ct .btn { min-height: 44px; }
+	.sek__h a, .cl__k { display: inline-flex; align-items: center; min-height: 44px; }
+	.fo__l { min-height: 44px; }
+	.fl .fc input, .fl input[type="number"], .fl input[type="text"], .fl select { font-size: 1rem; min-height: 44px; }
+}

@@ -32,5 +32,12 @@ export function picture(url: string | null | undefined, css: 160 | 240 | 320 | 4
   return { src: one, srcset: `${one} 1x, ${thumb(url, b)} 2x` };
 }
 
+/** Fluid photo (w descriptors): the phone downloads the smallest file that still covers its column (capped at 640 px, sharp enough for a 360 px column at 1.8×). */
+export function fluid(url: string | null | undefined): { src: string; srcset: string } | null {
+  const mid = thumb(url, 480);
+  if (!mid) return null;
+  return { src: mid, srcset: `${thumb(url, 320)} 320w, ${mid} 480w, ${thumb(url, 640)} 640w` };
+}
+
 /** Own uploads (article photos) as site-relative paths, so every host (staging, workers.dev) serves its own copy. */
 export const ownUpload = (u: string | null | undefined) => String(u ?? '').replace(/^https?:\/\/(www\.)?alkoholicky\.cz(?=\/(wp-content|a)\/)/, '');

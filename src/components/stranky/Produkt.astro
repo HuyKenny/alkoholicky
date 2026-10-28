@@ -9,7 +9,7 @@ import GrafCen from '../GrafCen.astro';
 import Mrizka from '../Mrizka.astro';
 import { splitDescription, type productView } from '../../lib/views';
 import { cena, cislo, decode, esc, texturize } from '../../lib/format';
-import { picture } from '../../lib/img';
+import { fluid, picture } from '../../lib/img';
 import { PARAM_LABEL, PARAM_ORDER, paramText } from '../../lib/params';
 import { shopName } from '../../lib/shops';
 
@@ -24,7 +24,7 @@ const shops = v.stats.shops;
 const offersHeading = d.offersHeading || `<h3>Kde koupit ${esc(v.name)} nejlevněji</h3>`;
 // dead image hosts give no thumbnail → the next photo becomes the main one
 const photos = [v.img, ...v.gallery].filter((u) => !!u && !!picture(u, 160)).slice(0, 5);
-const main = picture(photos[0], 480);
+const main = fluid(photos[0]);
 const specs = PARAM_ORDER.filter((k) => v.params[k]?.length).map((k) => [PARAM_LABEL[k], paramText(k, v.params[k]!)] as const);
 const disc = best && best.price_old > best.price ? Math.round((1 - best.price / best.price_old) * 100) : 0;
 ---
@@ -34,7 +34,7 @@ const disc = best && best.price_old > best.price ? Math.round((1 - best.price / 
 		<section class="pd">
 			<div class="ga">
 				<div class="ga__m">
-					{main ? <img src={main.src} srcset={main.srcset} alt={title} width="480" height="480" fetchpriority="high" decoding="async" /> : <Ik id="foto" />}
+					{main ? <img src={main.src} srcset={main.srcset} sizes="(min-width: 960px) 480px, calc(100vw - 32px)" alt={title} width="480" height="480" fetchpriority="high" decoding="async" /> : <Ik id="foto" />}
 				</div>
 				{photos.length > 1 && (
 					<ul class="ga__t" aria-label="Další fotky">

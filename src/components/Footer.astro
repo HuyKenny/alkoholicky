@@ -1,6 +1,7 @@
 ---
 // Footer: legal pages and main categories hard-coded (must not depend on menu edits), affiliate disclosure, 18+.
 import Logo from './Logo.astro';
+import { OPERATOR as O } from '../lib/site';
 const year = new Date().getFullYear();
 ---
 <footer class="pa-t">
@@ -44,7 +45,7 @@ const year = new Date().getFullYear();
 		</nav>
 	</div>
 	<div class="w pa-t__sp">
-		<span>© {year} Alkoholický.cz</span>
+		<span>© {year} Alkoholický.cz · Provozovatel {O.name}, IČO {O.ico}, {O.street}, {O.zip} {O.city} · neplátce DPH</span>
 		<span>Nejsme e-shop. Při nákupu přes naše odkazy můžeme získat provizi, cena se pro vás nemění.</span>
 	</div>
 </footer>
