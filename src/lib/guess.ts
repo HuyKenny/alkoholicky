@@ -12,6 +12,8 @@ export const stems = (t: string) => [...new Set(fold(t).split(/[^a-z0-9]+/).filt
 // Czech endings: drop trailing vowels, then the first 5 letters (maska/masky → mask, černý/černé → cern, korzety → korze)
 function stem(w: string) { return w.replace(/[aeiouy]+$/, '').slice(0, 5) || w.slice(0, 5); }
 
+/** stems of category names (rum, whisk, gin, vodk…): a brand matched only through them (Presidente Rum for "rum-do-caje") is no match, the category is */
+let catStems = new Set<string>();
 interface Doc { to: string; name: string[]; all: Set<string>; n: number; brand: boolean; generic?: boolean }
 let memo: { at: number; docs: Doc[]; idf: Map<string, number> } | null = null;
 
@@ -29,6 +31,7 @@ async function index(db: D1Database) {
     const name = stems(b.name);
     if (name.length) docs.push({ to: `/znacka/${b.slug}/`, name, all: new Set([...name, ...stems(b.slug)]), n: b.count, brand: true });
   }
+  catStems = new Set(docs.filter((d) => !d.brand).flatMap((d) => d.name));
   const df = new Map<string, number>();
   for (const d of docs) for (const s of d.all) df.set(s, (df.get(s) ?? 0) + 1);
   const idf = new Map([...df].map(([s, k]) => [s, Math.log(docs.length / k)]));
@@ -47,7 +50,7 @@ export async function guessListing(db: D1Database, words: string): Promise<strin
   let best: { to: string; score: number; n: number } | null = null;
   for (const d of docs) {
     let hit = 0;
-    for (const s of want) if (d.all.has(s)) hit += idf.get(s) ?? 0;
+    for (const s of want) if (d.all.has(s) && !(d.brand && catStems.has(s))) hit += idf.get(s) ?? 0;
     if (!hit) continue;
     let miss = 0;
     for (const s of d.name) if (!want.includes(s)) miss += idf.get(s) ?? 0;
