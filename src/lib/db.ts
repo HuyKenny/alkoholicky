@@ -65,6 +65,37 @@ export async function guessSlug(db: D1Database, slug: string): Promise<string | 
   return rows.length === 1 && slug.length >= rows[0]!.slug.length * 0.5 ? rows[0]!.slug : null;
 }
 
+
+/** Dead URL → the closest live page: a brand named in the slug, else a category by keyword, else the homepage (302: temporary, the
+ *  fallback is not a real match). Junk paths (files, wp-*, bot probes) stay 404. Returns null when the URL must remain a 404. */
+const DEAD_RULES: Array<[RegExp, string]> = [
+  [/adventn/, 'adventni-kalendare'], [/tequil|mezcal/, 'tequily-mezcaly'], [/whisk|bourbon|scotch|single-malt/, 'whisky-a-ochucene-whisky'],
+  [/(^|-)rum(y|u)?(-|$)|cachaca/, 'rumy-a-ochucene-rumy'], [/(^|-)gin(y|u)?(-|$)/, 'giny'], [/vodk/, 'vodky-a-ochucene-vodky'], [/prosecco/, 'prosecco'],
+  [/sampan|champag/, 'champagne-sampanske-vino'], [/sekt|sumiv|perliv/, 'sumiva-a-perliva-vina'], [/bil(e|a|y)-vin|bila-vin/, 'bila-vina'],
+  [/cerven(e|a)-vin/, 'cervena-vina'], [/ruzov(e|a)-vin/, 'ruzova-vina'], [/(^|-)vin(o|a|e|y|u)(-|$)|vinn/, 'vina'], [/nealko/, 'nealko'],
+  [/cider/, 'cidery'], [/(^|-)piv(o|a|u|e)(-|$)|beer|lager|(^|-)ipa(-|$)/, 'piva'], [/liker/, 'likery'], [/absint/, 'absinthy'],
+  [/konak|cognac|armagn/, 'konaky-armanaky-a-vinovice'], [/brandy|gruzin/, 'brandy-a-gruzinak'], [/slivov|palenk|svestk|hruskov|merunk/, 'palenky-a-ovocne-destilaty'],
+  [/medovin/, 'medovina'], [/vermut|sherry|portske/, 'portske-sherry-a-vermuty-fortifikovana-vina'], [/sirup/, 'sirupy'], [/limonad|tonic/, 'limonady'],
+  [/miniatur/, 'miniatury-alkoholu'], [/darek|darky|darkov/, 'darky-z-alkohol-cz'], [/kalkulac|promile/, 'alkohol-kalkulacka'],
+];
+export async function deadUrlTarget(db: D1Database, pathname: string): Promise<{ to: string; status: 301 | 302 } | null> {
+  const p = decodeURIComponent(pathname).toLowerCase();
+  if (/\.[a-z0-9]{2,5}\/?$/.test(p) || /^\/(wp-|go\/|api\/|\.well-known|feed|xmlrpc|cdn-cgi|_astro|admin)/.test(p)) return null;
+  const segs = p.split('/').filter(Boolean).filter((x) => x !== 'znacka' && x !== 'page' && !/^\d+$/.test(x));
+  const slug = (segs[segs.length - 1] ?? '').replace(/[^a-z0-9-]/g, '-');
+  if (!slug) return { to: '/', status: 302 };
+  const toks = slug.split('-').filter(Boolean);
+  const prefixes: string[] = [];
+  for (let n = Math.min(toks.length, 4); n >= 1; n--) { const c = toks.slice(0, n).join('-'); if (c.length >= 4) prefixes.push(c); }
+  if (prefixes.length) {
+    const rows = (await db.prepare(`SELECT slug FROM brands WHERE noindex = 0 AND count >= 3 AND slug IN (${prefixes.map(() => '?').join(',')})`).bind(...prefixes).all<{ slug: string }>()).results;
+    const hit = prefixes.find((x) => rows.some((r) => r.slug === x));
+    if (hit) return { to: `/znacka/${hit}/`, status: 301 };
+  }
+  for (const [re, cat] of DEAD_RULES) if (re.test(slug)) return { to: `/${cat}/`, status: 301 };
+  return { to: '/', status: 302 };
+}
+
 export type Sort = 'pop' | 'price' | 'price-desc' | 'date' | 'disc';
 export interface ListQuery {
   page: number; sort: Sort; min?: number | undefined; max?: number | undefined;
