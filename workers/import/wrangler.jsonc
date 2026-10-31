@@ -14,7 +14,7 @@
   "r2_buckets": [{ "binding": "FEED_MIRROR", "bucket_name": "alkoholicky-feeds" }],
   "triggers": { "crons": [] },
   "vars": {
-    "ALLOWED_FEED_HOSTS": "4bar.cz,affiliate.alza.cz,affiliateport.scaletrk.com,drinkcentrum.cz,feeds.mergado.com,reports.vicampo.de,www.alkohol.cz,www.dramroom.cz,www.lihovarek.cz,www.ocenenavina.cz,www.simplywines.cz,www.svetnapoju.cz,www.topalkohol.cz,www.warehouse1.cz",
+    "ALLOWED_FEED_HOSTS": "1er.cz,4bar.cz,affiliate.alza.cz,affiliateport.scaletrk.com,drinkcentrum.cz,feeds.mergado.com,reports.vicampo.de,www.alkohol.cz,www.dramroom.cz,www.lihovarek.cz,www.ocenenavina.cz,www.simplywines.cz,www.svetnapoju.cz,www.topalkohol.cz,www.warehouse1.cz",
     "MAX_DROP_PCT": "40",
     "STALE_DAYS": "7"
   },
@@ -30,7 +30,7 @@
       "d1_databases": [{ "binding": "DB", "database_name": "alkoholicky-staging", "database_id": "66c45d04-f3c7-42b4-8b3c-49d38fbb6a27", "migrations_dir": "../../migrations" }],
       "r2_buckets": [{ "binding": "FEED_MIRROR", "bucket_name": "alkoholicky-feeds" }],
       "vars": {
-        "ALLOWED_FEED_HOSTS": "4bar.cz,affiliate.alza.cz,affiliateport.scaletrk.com,drinkcentrum.cz,feeds.mergado.com,reports.vicampo.de,www.alkohol.cz,www.dramroom.cz,www.lihovarek.cz,www.ocenenavina.cz,www.simplywines.cz,www.svetnapoju.cz,www.topalkohol.cz,www.warehouse1.cz",
+        "ALLOWED_FEED_HOSTS": "1er.cz,4bar.cz,affiliate.alza.cz,affiliateport.scaletrk.com,drinkcentrum.cz,feeds.mergado.com,reports.vicampo.de,www.alkohol.cz,www.dramroom.cz,www.lihovarek.cz,www.ocenenavina.cz,www.simplywines.cz,www.svetnapoju.cz,www.topalkohol.cz,www.warehouse1.cz",
         "MAX_DROP_PCT": "40",
         "STALE_DAYS": "7"
       }
@@ -45,7 +45,7 @@
       "d1_databases": [{ "binding": "DB", "database_name": "alkoholicky-production", "database_id": "5760b578-8955-42b1-abd7-d29ca423ad83", "migrations_dir": "../../migrations" }],
       "r2_buckets": [{ "binding": "FEED_MIRROR", "bucket_name": "alkoholicky-feeds" }],
       "vars": {
-        "ALLOWED_FEED_HOSTS": "4bar.cz,affiliate.alza.cz,affiliateport.scaletrk.com,drinkcentrum.cz,feeds.mergado.com,reports.vicampo.de,www.alkohol.cz,www.dramroom.cz,www.lihovarek.cz,www.ocenenavina.cz,www.simplywines.cz,www.svetnapoju.cz,www.topalkohol.cz,www.warehouse1.cz",
+        "ALLOWED_FEED_HOSTS": "1er.cz,4bar.cz,affiliate.alza.cz,affiliateport.scaletrk.com,drinkcentrum.cz,feeds.mergado.com,reports.vicampo.de,www.alkohol.cz,www.dramroom.cz,www.lihovarek.cz,www.ocenenavina.cz,www.simplywines.cz,www.svetnapoju.cz,www.topalkohol.cz,www.warehouse1.cz",
         "MAX_DROP_PCT": "40",
         "STALE_DAYS": "7"
       }

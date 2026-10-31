@@ -30,7 +30,12 @@ export async function rebuildFacets(db: D1Database, day: string): Promise<Record
   await db.prepare("UPDATE products SET disc_pct = 0 WHERE disc_pct < 3 OR min_price = 0").run();
   // clicks count once per visitor and day (ip_hash rotates daily) — a few IPs cannot push a product up
   await db.prepare(`WITH c AS (SELECT product_id, COUNT(DISTINCT ip_hash || substr(clicked_at, 1, 10)) AS n FROM clicks WHERE clicked_at >= ? AND ip_hash <> '' GROUP BY product_id)
-    UPDATE products SET pop = total_sales * 5 + shop_count * 3 + in_stock * 5 + 20 * COALESCE((SELECT n FROM c WHERE c.product_id = products.id), 0)`).bind(clicksSince).run();
+    UPDATE products SET pop = total_sales * 5 + shop_count * 3 + in_stock * 5 + 20 * COALESCE((SELECT n FROM c WHERE c.product_id = products.id), 0)
+      -- demand: Google Search clicks (weight 8) and impressions (1 per 20, capped) of the product page, 28 days (product_signals, gsc-signaly.py)
+      + COALESCE((SELECT MIN(400, g.gsc_clicks * 8 + g.impressions / 20) FROM product_signals g WHERE g.product_id = products.id), 0)
+      -- a discount and a new arrival get a nudge (the new one has no data yet)
+      + CASE WHEN disc_pct >= 10 THEN 10 ELSE 0 END
+      + CASE WHEN created_at >= date('now', '-14 days') THEN 40 ELSE 0 END`).bind(clicksSince).run();
   const rules = await applyCategoryRules(db);
   // 2. sort keys
   await db.prepare(`UPDATE cat_products SET

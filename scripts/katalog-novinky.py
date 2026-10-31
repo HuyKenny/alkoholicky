@@ -37,9 +37,9 @@ NODE = "/home/kenny/.nvm/versions/node/v22.23.1/bin"
 MAP_FILE = APP / "src/data/feed-kategorie.json"  # feed path + name → category rules
 # google = Google Merchant <item>, heureka = <SHOPITEM>; order = which shop's data (name, text, photos) wins
 FEEDS = {1: "heureka", 11: "heureka", 3: "heureka", 2: "heureka", 19: "heureka", 4: "heureka", 10: "heureka", 12: "heureka", 8: "heureka", 5: "heureka",
-         7: "heureka", 9: "heureka", 13: "heureka", 14: "heureka", 15: "heureka", 17: "heureka", 18: "heureka", 16: "google", 20: "google"}
+         7: "heureka", 9: "heureka", 13: "heureka", 14: "heureka", 15: "heureka", 17: "heureka", 18: "heureka", 16: "google", 20: "google", 21: "google"}
 DOMAIN = {1: "alkohol.cz", 11: "dramroom.cz", 3: "svetnapoju.cz", 2: "drinkcentrum.cz", 19: "4bar.cz", 4: "topalkohol.cz", 10: "warehouse1.cz", 12: "lihovarek.cz", 8: "barman.cz",
-          5: "vinisto.cz", 7: "vinokral.cz", 9: "ocenenavina.cz", 13: "osobnivinoteka.cz", 14: "panalfred.cz", 15: "wineplanet.cz", 17: "donpealo.cz", 18: "destilerka.cz", 16: "simplywines.cz", 20: "alza.cz"}
+          5: "vinisto.cz", 7: "vinokral.cz", 9: "ocenenavina.cz", 13: "osobnivinoteka.cz", 14: "panalfred.cz", 15: "wineplanet.cz", 17: "donpealo.cz", 18: "destilerka.cz", 16: "simplywines.cz", 20: "alza.cz", 21: "1er.cz"}
 GUARD = 500  # more new products in one run = something is wrong (unless --first-fill)
 
 args = sys.argv[1:]
@@ -681,7 +681,7 @@ def main():
         # flush before a new product (or brand/key/update) once the batch is big, never inside one product's rows
         boundary = st is None or not st.startswith(("INSERT INTO slugs", "INSERT OR IGNORE INTO cat_products", "INSERT OR IGNORE INTO brand_products",
                                                     "INSERT INTO product_fts", "INSERT OR IGNORE INTO product_keys (key, product_id) VALUES ('uid", "INSERT OR IGNORE INTO product_keys (key, product_id) VALUES ('ean"))
-        if (boundary and len(chunk) >= 4000) or len(chunk) >= 8000 or (st is None and chunk):
+        if (boundary and len(chunk) >= 1200) or len(chunk) >= 2500 or (st is None and chunk):
             f = tmpd / f"part-{part:03d}.sql"
             f.write_text("\n".join(chunk))
             d1(file=str(f))

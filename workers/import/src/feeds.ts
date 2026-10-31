@@ -35,6 +35,7 @@ export const FEEDS: FeedDef[] = [
   { id: 19, name: '4bar', domain: '4bar.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=91538989&desturl=', tracking: '' },
   // Alza affiliate feed: links already carry the partner id
   { id: 20, name: 'Alza', domain: 'alza.cz', format: 'google', deeplink: '', tracking: '' },
+  { id: 21, name: '1ER', domain: '1er.cz', format: 'google', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=e6694fef&desturl=', tracking: '' },
 ];
 
 export const feedKey = (f: FeedDef) => `Feed__${f.id}`;
