@@ -555,6 +555,7 @@ def main():
 
     # 5. build rows
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+    NEWP = f"(SELECT id FROM products WHERE status = 'publish' AND created_at = '{now}')"
     next_pid = max(p["id"] for p in prods) + 1
     next_bid = max(b["id"] for b in brands) + 1
     new_brands = {}
@@ -626,16 +627,19 @@ def main():
     if created:
         # a new product may reuse the slug of an old WordPress product that was redirected to a category (5 673 such 301s) —
         # the product wins, otherwise its page is unreachable and the sitemap lists a redirect
-        sql.append("DELETE FROM redirects WHERE from_path IN (SELECT '/' || slug || '/' FROM slugs WHERE kind IN ('product', 'category', 'post', 'page'));")
+        # only the slugs of THIS run's products (a table-wide DELETE hit the D1 CPU limit and would also drop the lifecycle 301s of retired products)
+        sql.append(f"DELETE FROM redirects WHERE from_path IN (SELECT '/' || slug || '/' FROM slugs WHERE kind = 'product' AND ref_id IN {NEWP});")
     if created:
         # category counters drive the listing totals, noindex of thin categories and the sitemaps
         sql.append("UPDATE categories SET count_total = (SELECT COUNT(*) FROM cat_products x JOIN products p ON p.id = x.product_id WHERE x.cat_id = categories.id AND p.status = 'publish'), "
-                   "count_direct = (SELECT COUNT(*) FROM cat_products x JOIN products p ON p.id = x.product_id WHERE x.cat_id = categories.id AND x.direct = 1 AND p.status = 'publish');")
+                   "count_direct = (SELECT COUNT(*) FROM cat_products x JOIN products p ON p.id = x.product_id WHERE x.cat_id = categories.id AND x.direct = 1 AND p.status = 'publish') "
+                   f"WHERE id IN (SELECT DISTINCT cat_id FROM cat_products WHERE product_id IN {NEWP});")
     if created:
         # categories that were noindex only because WordPress found them thin (< 3 products) become indexable with ≥ 5 products
         sql.append("UPDATE categories SET noindex = 0, seo_robots = '' WHERE count_total >= 5 AND slug NOT IN ('sluzby', 'pochutiny-a-delikatesy', 'pochutiny', 'darkove-baleni', 'caj') AND (noindex = 1 OR seo_robots LIKE '%noindex%');")
     if new_brands or created:
-        sql.append("UPDATE brands SET count = (SELECT COUNT(*) FROM brand_products bp JOIN products p ON p.id = bp.product_id WHERE bp.brand_id = brands.id AND p.status = 'publish');")
+        sql.append("UPDATE brands SET count = (SELECT COUNT(*) FROM brand_products bp JOIN products p ON p.id = bp.product_id WHERE bp.brand_id = brands.id AND p.status = 'publish') "
+                   f"WHERE id IN (SELECT DISTINCT brand_id FROM products WHERE created_at = '{now}' AND brand_id > 0);")
 
     # 6. report
     day = datetime.now().strftime("%Y-%m-%d")
@@ -681,7 +685,8 @@ def main():
         # flush before a new product (or brand/key/update) once the batch is big, never inside one product's rows
         boundary = st is None or not st.startswith(("INSERT INTO slugs", "INSERT OR IGNORE INTO cat_products", "INSERT OR IGNORE INTO brand_products",
                                                     "INSERT INTO product_fts", "INSERT OR IGNORE INTO product_keys (key, product_id) VALUES ('uid", "INSERT OR IGNORE INTO product_keys (key, product_id) VALUES ('ean"))
-        if (boundary and len(chunk) >= 1200) or len(chunk) >= 2500 or (st is None and chunk):
+        heavy = st is not None and st.startswith(("DELETE FROM redirects", "UPDATE categories", "UPDATE brands"))
+        if (heavy and chunk) or (boundary and len(chunk) >= 1200) or len(chunk) >= 2500 or (st is None and chunk):
             f = tmpd / f"part-{part:03d}.sql"
             f.write_text("\n".join(chunk))
             d1(file=str(f))
