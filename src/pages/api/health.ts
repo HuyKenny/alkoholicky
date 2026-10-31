@@ -3,7 +3,7 @@ import type { APIRoute } from 'astro';
 import { getEnv } from '../../lib/server/env';
 
 export const prerender = false;
-const MAX_AGE_H = 30;
+const MAX_AGE_H = 200; // imports run weekly (Monday night)
 const MIN_OFFERS = 8_000;  // alkoholicky.cz: ~14k active offers after the first import (27. 10. 2026)
 
 export const GET: APIRoute = async () => {

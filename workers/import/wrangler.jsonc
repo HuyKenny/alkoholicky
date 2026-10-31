@@ -40,7 +40,7 @@
       "workers_dev": true,
       "preview_urls": false,
       // every 10 min between 01:00 and 05:50 UTC: 19 feeds one by one, then the day is finalised
-      "triggers": { "crons": ["*/10 1-5 * * *"] },
+      "triggers": { "crons": ["*/10 1-5 * * 1"] },
       "limits": { "cpu_ms": 300000 },
       "d1_databases": [{ "binding": "DB", "database_name": "alkoholicky-production", "database_id": "5760b578-8955-42b1-abd7-d29ca423ad83", "migrations_dir": "../../migrations" }],
       "r2_buckets": [{ "binding": "FEED_MIRROR", "bucket_name": "alkoholicky-feeds" }],
