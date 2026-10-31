@@ -25,9 +25,10 @@ export async function rebuildFacets(db: D1Database, day: string): Promise<Record
   // 1. discount + popularity
   // only the shop's own old price counts: the daily minimum moves whenever an offer appears or disappears, so a
   // "drop" against price history is no discount (27. 10.: history-based values gave dozens of false −80 %)
-  await db.prepare(`UPDATE products SET disc_pct = MIN(70,
-      COALESCE((SELECT CAST(ROUND((o.price_old - o.price) * 100.0 / o.price_old) AS INTEGER) FROM offers o WHERE o.id = products.best_offer_id AND o.active = 1 AND o.price_old > o.price), 0))`).run();
-  await db.prepare("UPDATE products SET disc_pct = 0 WHERE disc_pct < 3 OR min_price = 0").run();
+  // writes only the rows that change (D1 counts every UPDATEd row as written, a table-wide rewrite is ~25k writes a night)
+  const DISC = `MIN(70, COALESCE((SELECT CAST(ROUND((o.price_old - o.price) * 100.0 / o.price_old) AS INTEGER) FROM offers o WHERE o.id = products.best_offer_id AND o.active = 1 AND o.price_old > o.price), 0))`;
+  await db.prepare(`UPDATE products SET disc_pct = CASE WHEN ${DISC} < 3 OR min_price = 0 THEN 0 ELSE ${DISC} END
+      WHERE disc_pct <> CASE WHEN ${DISC} < 3 OR min_price = 0 THEN 0 ELSE ${DISC} END`).run();
   // clicks count once per visitor and day (ip_hash rotates daily) — a few IPs cannot push a product up
   await db.prepare(`WITH c AS (SELECT product_id, COUNT(DISTINCT ip_hash || substr(clicked_at, 1, 10)) AS n FROM clicks WHERE clicked_at >= ? AND ip_hash <> '' GROUP BY product_id)
     UPDATE products SET pop = total_sales * 5 + shop_count * 3 + in_stock * 5 + 20 * COALESCE((SELECT n FROM c WHERE c.product_id = products.id), 0)
@@ -35,13 +36,20 @@ export async function rebuildFacets(db: D1Database, day: string): Promise<Record
       + COALESCE((SELECT MIN(400, g.gsc_clicks * 8 + g.impressions / 20) FROM product_signals g WHERE g.product_id = products.id), 0)
       -- a discount and a new arrival get a nudge (the new one has no data yet)
       + CASE WHEN disc_pct >= 10 THEN 10 ELSE 0 END
-      + CASE WHEN created_at >= date('now', '-14 days') THEN 40 ELSE 0 END`).bind(clicksSince).run();
+      + CASE WHEN created_at >= date('now', '-14 days') THEN 40 ELSE 0 END
+      WHERE pop <> (total_sales * 5 + shop_count * 3 + in_stock * 5 + 20 * COALESCE((SELECT n FROM c WHERE c.product_id = products.id), 0)
+      -- demand: Google Search clicks (weight 8) and impressions (1 per 20, capped) of the product page, 28 days (product_signals, gsc-signaly.py)
+      + COALESCE((SELECT MIN(400, g.gsc_clicks * 8 + g.impressions / 20) FROM product_signals g WHERE g.product_id = products.id), 0)
+      -- a discount and a new arrival get a nudge (the new one has no data yet)
+      + CASE WHEN disc_pct >= 10 THEN 10 ELSE 0 END
+      + CASE WHEN created_at >= date('now', '-14 days') THEN 40 ELSE 0 END)`).bind(clicksSince).run();
   const rules = await applyCategoryRules(db);
   // 2. sort keys
   await db.prepare(`UPDATE cat_products SET
       min_price = (SELECT p.min_price FROM products p WHERE p.id = cat_products.product_id),
       pop = (SELECT p.pop FROM products p WHERE p.id = cat_products.product_id),
-      disc = (SELECT p.disc_pct FROM products p WHERE p.id = cat_products.product_id)`).run();
+      disc = (SELECT p.disc_pct FROM products p WHERE p.id = cat_products.product_id)
+      WHERE EXISTS (SELECT 1 FROM products p WHERE p.id = cat_products.product_id AND (p.min_price <> cat_products.min_price OR p.pop <> cat_products.pop OR p.disc_pct <> cat_products.disc))`).run();
 
   // 3. facets
   const all = async <T>(sql: string, ...b: unknown[]) => (await db.prepare(sql).bind(...b).all<T>()).results;

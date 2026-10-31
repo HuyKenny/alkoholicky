@@ -21,7 +21,7 @@ import dofollow from './data/dofollow.json';
 const NO_CACHE = [/^\/go\//, /^\/api\//, /^\/wp-content\//, /^\/a\//, /^\/_astro\//];
 /** Paths whose case matters (base64 image paths, hashed assets, uploads) are never lowercased. */
 const KEEP_CASE = /^\/(wp-content|a|_astro|go)\//;
-const CACHE_TTL = 600;
+const CACHE_TTL = 21600;  // 6 h (was 10 min): data_version in the key already invalidates the pages after every nightly import, the TTL only bounds repeat misses
 
 // the Rank Math redirect table (a few dozen rows) lives in isolate memory — a cached page never waits for D1
 let redirMemo: { at: number; map: Map<string, { to_path: string; status: number }> } | null = null;

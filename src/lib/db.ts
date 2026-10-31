@@ -109,7 +109,7 @@ function sortSql(s: Sort, cat: boolean): string {
   const t = cat ? 'x' : 'p';
   const price = cat ? 'x.min_price' : 'p.min_price';
   switch (s) {
-    case 'price': return `${price} = 0, ${price} ASC, x.product_id DESC`;
+    case 'price': return cat ? 'x.min_price ASC, x.product_id DESC' : `${price} = 0, ${price} ASC, x.product_id DESC`;  // cat: idx_cp_price (the zero prices are cut off in listProducts)
     case 'price-desc': return `${price} DESC, x.product_id DESC`;
     case 'date': return 'x.created_at DESC, x.product_id DESC';
     case 'disc': return `${cat ? 'x.disc' : 'p.disc_pct'} DESC, ${t}.pop DESC, x.product_id DESC`;
@@ -137,6 +137,8 @@ export async function listProducts(db: D1Database, by: { cat?: number; brand?: n
       binds.push(f.key, ...f.ranges.flat());
     }
   }
+  // sorted by price: products without a price (no offer) are left out so the sort walks idx_cp_price instead of scanning the category (40k reads on /lihoviny/)
+  if (by.cat && q.sort === 'price') filt.push('x.min_price > 0');
   const where = `x.${col} = ? AND p.status = 'publish'` + (filt.length ? ' AND ' + filt.join(' AND ') : '');
   const off = (q.page - 1) * PER_PAGE;
   const list = db.prepare(`SELECT ${CARD_COLS} FROM ${tbl} x JOIN products p ON p.id = x.product_id ${CARD_JOIN} WHERE ${where} ORDER BY ${sortSql(q.sort, !!by.cat)} LIMIT ${PER_PAGE} OFFSET ${off}`).bind(...binds);
