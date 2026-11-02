@@ -36,7 +36,7 @@ APP = ROOT / "apps/alkoholicky"
 NODE = "/home/kenny/.nvm/versions/node/v22.23.1/bin"
 MAP_FILE = APP / "src/data/feed-kategorie.json"  # feed path + name → category rules
 # google = Google Merchant <item>, heureka = <SHOPITEM>; order = which shop's data (name, text, photos) wins
-FEEDS = {1: "heureka", 11: "heureka", 3: "heureka", 2: "heureka", 19: "heureka", 4: "heureka", 10: "heureka", 12: "heureka", 8: "heureka", 5: "heureka",
+FEEDS = {1: "heureka", 11: "heureka", 3: "heureka", 2: "heureka", 4: "heureka", 10: "heureka", 12: "heureka", 8: "heureka", 5: "heureka",
          7: "heureka", 9: "heureka", 13: "heureka", 14: "heureka", 15: "heureka", 17: "heureka", 18: "heureka", 16: "google", 20: "google", 21: "google"}
 DOMAIN = {1: "alkohol.cz", 11: "dramroom.cz", 3: "svetnapoju.cz", 2: "drinkcentrum.cz", 19: "4bar.cz", 4: "topalkohol.cz", 10: "warehouse1.cz", 12: "lihovarek.cz", 8: "barman.cz",
           5: "vinisto.cz", 7: "vinokral.cz", 9: "ocenenavina.cz", 13: "osobnivinoteka.cz", 14: "panalfred.cz", 15: "wineplanet.cz", 17: "donpealo.cz", 18: "destilerka.cz", 16: "simplywines.cz", 20: "alza.cz", 21: "1er.cz"}

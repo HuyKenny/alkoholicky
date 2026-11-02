@@ -32,7 +32,7 @@ export const FEEDS: FeedDef[] = [
   { id: 16, name: 'SimplyWines', domain: 'simplywines.cz', format: 'google', deeplink: 'https://go.dognet.com/?chid=Gcxudbrq&url=', tracking: '' },
   { id: 17, name: 'Don Pealo', domain: 'donpealo.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=aba3e9dd&desturl=', tracking: '' },
   { id: 18, name: 'Destilérka', domain: 'destilerka.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=d67420b4&desturl=', tracking: '' },
-  { id: 19, name: '4bar', domain: '4bar.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=91538989&desturl=', tracking: '' },
+  { id: 19, name: '4bar', domain: '4bar.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=91538989&desturl=', tracking: '', enabled: false },  // affiliate programme ended 31. 10. 2026 (partner mail)
   // Alza affiliate feed: links already carry the partner id
   { id: 20, name: 'Alza', domain: 'alza.cz', format: 'google', deeplink: '', tracking: '' },
   { id: 21, name: '1ER', domain: '1er.cz', format: 'google', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=e6694fef&desturl=', tracking: '' },
