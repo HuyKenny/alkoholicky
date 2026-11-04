@@ -36,13 +36,15 @@ export async function rebuildFacets(db: D1Database, day: string): Promise<Record
       + COALESCE((SELECT MIN(400, g.gsc_clicks * 8 + g.impressions / 20) FROM product_signals g WHERE g.product_id = products.id), 0)
       -- a discount and a new arrival get a nudge (the new one has no data yet)
       + CASE WHEN disc_pct >= 10 THEN 10 ELSE 0 END
-      + CASE WHEN created_at >= date('now', '-14 days') THEN 40 ELSE 0 END
+      -- (the catalogue created on 27. 10. is not "new": only products added after 1. 11. get the boost)
+      + CASE WHEN created_at >= date('now', '-14 days') AND created_at >= '2026-11-01' THEN 40 ELSE 0 END
       WHERE pop <> (total_sales * 5 + shop_count * 3 + in_stock * 5 + 20 * COALESCE((SELECT n FROM c WHERE c.product_id = products.id), 0)
       -- demand: Google Search clicks (weight 8) and impressions (1 per 20, capped) of the product page, 28 days (product_signals, gsc-signaly.py)
       + COALESCE((SELECT MIN(400, g.gsc_clicks * 8 + g.impressions / 20) FROM product_signals g WHERE g.product_id = products.id), 0)
       -- a discount and a new arrival get a nudge (the new one has no data yet)
       + CASE WHEN disc_pct >= 10 THEN 10 ELSE 0 END
-      + CASE WHEN created_at >= date('now', '-14 days') THEN 40 ELSE 0 END)`).bind(clicksSince).run();
+      -- (the catalogue created on 27. 10. is not "new": only products added after 1. 11. get the boost)
+      + CASE WHEN created_at >= date('now', '-14 days') AND created_at >= '2026-11-01' THEN 40 ELSE 0 END)`).bind(clicksSince).run();
   const rules = await applyCategoryRules(db);
   // 2. sort keys
   await db.prepare(`UPDATE cat_products SET

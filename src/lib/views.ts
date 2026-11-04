@@ -62,6 +62,10 @@ export async function categoryView(db: D1Database, catId: number, page: number, 
     facet ? Promise.resolve([] as FacetPage[]) : db.prepare('SELECT * FROM facet_pages WHERE noindex = 0 AND total >= min_products AND base_slug = (SELECT slug FROM categories WHERE id = ?)').bind(catId).all<FacetPage>().then((r) => r.results).catch(() => [] as FacetPage[])]);
   if (!cat0) return null;
   const fp = facet?.fp;
+  // "Oblíbené výběry": crawlable links to the landings of this category (price caps, brands, types). Landings used to be reachable only
+  // through a filter click, so Google never found them (URL Inspection 4. 11. 2026: "Google adresu URL nezná").
+  const picks = await db.prepare("SELECT slug, h1 FROM facet_pages WHERE noindex = 0 AND total >= min_products AND base_slug = ? AND slug <> ? ORDER BY volume DESC, total DESC LIMIT 14")
+    .bind(cat0.slug, fp?.slug ?? '').all<{ slug: string; h1: string }>().then((r) => r.results).catch(() => [] as Array<{ slug: string; h1: string }>);
   // a facet shows its own texts instead of the category's; the icon and the tree position stay the base category's
   const cat = fp ? { ...cat0, name: fp.h1, seo_title: fp.seo_title, seo_desc: fp.seo_desc, description_html: fp.intro_html, second_html: fp.second_html, guide_html: '', faq_json: fp.faq_json, seo_robots: '' } : cat0;
   const f = parseFilters(sp);
@@ -115,7 +119,7 @@ export async function categoryView(db: D1Database, catId: number, page: number, 
   // gift categories link the seasonal guides (mu-plugin v2.6: Q4 corporate orders)
   const gift = ['darkove-boxy', 'darkove-baleni', 'darkova-baleni-alkoholu', 'darky-z-alkohol-cz', 'darkove-sady-na-vyrobu-alkoholu'].includes(cat.slug) && page === 1;
   return {
-    meta, cat, crumbs, items, total, page, pages, base, f, qs: toQuery(fp ? parseFilters(facet!.user) : f), kids, kidsTitle, tree, fc, brands, imgs, landings, faq, gift,
+    meta, cat, crumbs, items, total, page, pages, base, f, qs: toQuery(fp ? parseFilters(facet!.user) : f), kids, kidsTitle, tree, fc, brands, imgs, landings, faq, gift, picks,
     guide: page === 1 && !filtered ? cat.guide_html : '',
     isFiltered: filtered,
   };

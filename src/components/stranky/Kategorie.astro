@@ -38,6 +38,12 @@ const top = first ? v.items.slice(0, 8) : [];
 				<p class="pozn">Ceny porovnáváme z více než 20 e-shopů a aktualizujeme je denně. Pořadí dle oblíbenosti.</p>
 			</section>
 		)}
+		{first && v.picks.length > 0 && (
+			<section class="sek ah-picks">
+				<h2>Oblíbené výběry: {name}</h2>
+				<ul class="hero__q">{v.picks.map((c) => <li><a href={`/${c.slug}/`}>{decode(c.h1)}</a></li>)}</ul>
+			</section>
+		)}
 		{v.guide && <section class="sek txt ah-guide" set:html={v.guide} />}
 		{v.faq.length > 0 && (
 			<section class="sek faq ah-faq">
