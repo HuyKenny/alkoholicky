@@ -2,16 +2,38 @@
 import Base from '../../layouts/Base.astro';
 import Vypis from './Vypis.astro';
 import type { brandView } from '../../lib/views';
-import { decode } from '../../lib/format';
+import { cena, decode, texturize } from '../../lib/format';
+import { shopName } from '../../lib/shops';
 
 interface Props { v: NonNullable<Awaited<ReturnType<typeof brandView>>> }
 const { v } = Astro.props;
 const m = v.meta;
 ---
 <Base title={m.title} description={m.description} canonical={m.canonical} prev={m.prev} next={m.next} robots={m.robots} graph={m.graph} jsonLd={m.jsonLd} pageType="brand">
-	<Vypis crumbs={v.crumbs} h1={decode(v.brand.name)} introHtml={v.page === 1 && !v.isFiltered ? v.brand.description_html : undefined}
+	<Vypis lead={v.lead} crumbs={v.crumbs} h1={decode(v.brand.name)} introHtml={v.page === 1 && !v.isFiltered ? v.brand.description_html : undefined}
 		f={v.f} fc={v.fc} brands={v.brands} cats={v.tree.byId} items={v.items} total={v.total} page={v.page} pages={v.pages} base={v.base} qs={v.qs}
 		empty="Od této značky teď nemáme žádné produkty.">
+		{v.page === 1 && !v.isFiltered && v.cd && (
+			<section class="sek ah-prehled">
+				<h2>{decode(v.brand.name)}: přehled cen</h2>
+				<ul class="hero__s">
+					<li><b>{cena(v.cd.lo)}</b> nejnižší cena</li>
+					<li><b>{cena(v.cd.med)}</b> běžná cena</li>
+					{v.cd.ppl_med ? <li><b>{cena(v.cd.ppl_med)}</b> průměr za litr</li> : null}
+					{v.shopsN ? <li><b>{v.shopsN}</b> obchodů v srovnání</li> : null}
+				</ul>
+				{v.cd.ppl && v.cd.ppl.length >= 3 && (
+					<>
+						<h3>Nejlevnější {decode(v.brand.name)} podle ceny za litr</h3>
+						<div class="tw"><table class="ct">
+							<thead><tr><th>#</th><th>Produkt</th><th>Cena</th><th>Kč / litr</th><th>Obchod</th></tr></thead>
+							<tbody>{v.cd.ppl.slice(0, 6).map((p, i) => <tr><td>{i + 1}</td><td><a href={`/${p.s}/`}>{texturize(decode(p.n))}</a></td><td class="num">{cena(p.p)}</td><td class="num">{cena(p.l)}</td><td>{p.d ? shopName(p.d) : '—'}</td></tr>)}</tbody>
+						</table></div>
+					</>
+				)}
+				{v.cd.cats && v.cd.cats.length > 1 && <p class="pozn">{decode(v.brand.name)} podle druhu: {v.cd.cats.map((c, i) => <>{i ? ', ' : ''}<a href={`/${c.s}/`}>{decode(c.n)}</a> ({c.c})</>)}.{v.cd.u ? ' Údaje k ' + v.cd.u.split('-').reverse().map((x) => String(Number(x))).join('. ') + '.' : ''}</p>}
+			</section>
+		)}
 		{v.page === 1 && !v.isFiltered && v.brand.second_html && <section class="sek txt" set:html={v.brand.second_html} />}
 		{v.page === 1 && !v.isFiltered && v.faq.length > 0 && (
 			<section class="sek faq ah-faq">

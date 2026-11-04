@@ -181,7 +181,7 @@ function only(f: ReturnType<typeof parseFilters>): string | null {
 export async function brandView(db: D1Database, slug: string, page: number, sp: URLSearchParams) {
   const [b, tree, brands] = await Promise.all([loadBrand(db, slug), catTree(db), brandList(db)]);
   if (!b) return null;
-  const fc = await facets(db, `fb:${b.id}`);
+  const [fc, cdRaw, homeRaw] = await Promise.all([facets(db, `fb:${b.id}`), siteCache(db, `cdata:b:${b.id}`), siteCache(db, 'home')]);
   const f = parseFilters(sp);
   f.znacka = [];
   const filtered = isFiltered(f);
@@ -198,15 +198,38 @@ export async function brandView(db: D1Database, slug: string, page: number, sp: 
   const crumbs: Crumb[] = [{ name: 'Domů', url: '/' }, { name: decode(b.name), url: base }];
   let faq: Array<{ q: string; a: string }> = [];
   try { faq = page === 1 && b.faq_json ? JSON.parse(b.faq_json) : []; } catch { /* broken JSON = no FAQ */ }
+  // live price data (nightly, kategorie-data.py): lead, quick overview, "cena" in the title (Jägermeister cena 610/month, Becherovka cena 390 ...), FAQ answers with numbers
+  let cd: CData & { cats?: Array<{ s: string; n: string; c: number }> } | null = null;
+  try { cd = cdRaw ? JSON.parse(cdRaw) : null; } catch { /* no data */ }
+  let shopsN = 0;
+  try { shopsN = ((JSON.parse(homeRaw ?? '{}') as { shops?: Array<[string, number]> }).shops ?? []).length; } catch { /* no home cache */ }
+  const bn = decode(b.name);
+  const kcs = (n: number) => `${cislo(n)} Kč`;
+  const short = (t: string) => t.replace(/\s+/g, ' ').replace(/\s+\d[\d,.]*\s*(l|cl|ml)\b.*$/i, '').trim();
+  let lead = ''; let dynTitle = ''; let dynDesc = '';
+  if (cd && page === 1 && !filtered) {
+    const c0 = cd.cheapest[0];
+    const cats = (cd.cats ?? []).filter((c) => c.s !== 'ostatni').slice(0, 4);
+    lead = `<p class="lead"><strong>${bn}</strong>: porovnáváme ${cislo(cd.n)} ${produktu(cd.n)} z ${shopsN || '20+'} e-shopů, ceny od ${kcs(cd.lo)} (běžná cena ${kcs(cd.med)}).`
+      + (c0 ? ` Nejlevnější: <a href="/${c0.s}/">${decode(short(c0.n))}</a> za ${kcs(c0.p)}${c0.d ? ' (' + shopName(c0.d) + ')' : ''}.` : '')
+      + (cats.length ? ` Najdete je v kategoriích ${cats.map((c, i) => `${i ? ', ' : ''}<a href="/${c.s}/">${decode(c.n).toLowerCase()}</a> (${c.c})`).join('')}.` : '') + ` Ceny aktualizujeme každý den.</p>`;
+    dynTitle = [`${bn} cena od ${kcs(cd.lo)} – všechny druhy | Alkoholický`, `${bn} cena od ${kcs(cd.lo)} | Alkoholický`, `${bn} cena | Alkoholický`].find((t) => t.length <= 62) ?? '';
+    dynDesc = clamp(`${bn}: ${cislo(cd.n)} ${produktu(cd.n)} od ${kcs(cd.lo)}${c0 ? `, nejlevnější ${decode(short(c0.n))} za ${kcs(c0.p)}` : ''}. Porovnání cen z ${shopsN || '20+'} e-shopů, aktualizace denně.`, 158);
+    if (faq.length || cd.n >= 3) faq = [
+      { q: `Kolik stojí ${bn}?`, a: `Ceny ${bn} začínají na ${kcs(cd.lo)}, běžná cena v našem srovnání je ${kcs(cd.med)}${cd.ppl_med ? ` (orientačně ${kcs(cd.ppl_med)} za litr)` : ''}. Konkrétní cena závisí na druhu, objemu a balení.` },
+      ...(c0 ? [{ q: `Kde koupit ${bn} nejlevněji?`, a: `Dnes je nejlevnější ${decode(short(c0.n))} za ${kcs(c0.p)}${c0.d ? ' v obchodě ' + shopName(c0.d) : ''}. U každého produktu vidíte všechny obchody seřazené podle ceny; nakupujete přímo u e-shopu, my ceny jen porovnáváme.` }] : []),
+      ...faq];
+  }
   const meta: Meta = {
-    title, description: descFrom(b.seo_desc, '', {}, brandSeo(b).desc, page),
+    title: dynTitle && b.slug !== 'karloff-tatratea-tatransky-caj' ? dynTitle : title,
+    description: dynDesc && !b.seo_desc ? dynDesc : descFrom(b.seo_desc, '', {}, brandSeo(b).desc, page),
     ...(thin || filtered ? {} : { canonical: url }), robots: filtered ? ['noindex', 'follow'] : robots(thin),
     ...(page > 1 && !filtered ? { prev: abs(pagePath(base, page - 1)) } : {}),
     ...(page < pages && !filtered ? { next: abs(pagePath(base, page + 1)) } : {}),
     graph: [faq.length ? { ...collection(url, title), '@type': 'FAQPage', mainEntity: faq.map((x) => ({ '@type': 'Question', name: stripTags(x.q), acceptedAnswer: { '@type': 'Answer', text: stripTags(x.a) } })) } : collection(url, title)],
     jsonLd: [breadcrumbLd(crumbs), itemListLd(abs(base), decode(b.name), items)].filter(Boolean),
   };
-  return { meta, faq, brand: b, crumbs, items, total, page, pages, base, f, qs: toQuery(f), tree, fc, brands, isFiltered: filtered };
+  return { meta, faq, lead, cd, shopsN, brand: b, crumbs, items, total, page, pages, base, f, qs: toQuery(f), tree, fc, brands, isFiltered: filtered };
 }
 
 /** mu-plugin ah_claude_brand_seo (v2.0): title/description of brands without their own Rank Math texts. */
@@ -280,8 +303,28 @@ export async function productView(db: D1Database, id: number) {
   const related = await relatedProducts(db, primary?.id ?? 0, p.id, p.min_price || 0);
   let gallery: string[] = [];
   try { gallery = p.images ? (JSON.parse(p.images) as string[]).map(validImage).filter(Boolean) : []; } catch { /* no gallery */ }
+  // data blocks (no feed text): price per litre against the category median, FAQ from the numbers, more of the same brand, a paragraph from the parameters
+  const cdp = offers.length && primary ? await siteCache(db, `cdata:${primary.id}`).then((r) => { try { return r ? JSON.parse(r) as CData : null; } catch { return null; } }) : null;
+  const ppl = lit >= 0.3 && lit <= 5 && liveMin > 0 ? Math.round(liveMin / lit) : 0;
+  const vsMed = cdp && cdp.med > 0 && liveMin > 0 ? Math.round((1 - liveMin / cdp.med) * 100) : 0;
+  const abvP = (params.alkohol ?? [])[0]; const volP = (params.objem ?? [])[0]; const zemeP = (params.zeme ?? [])[0];
+  const brandName = brand && brand.slug !== 'ostatni' ? decode(brand.name) : '';
+  const shortFeed = stripTags(p.desc_html ?? '').length < 300;
+  const autoText = offers.length && shortFeed && primary
+    ? `${name} je ${decode(primary.name).toLowerCase()}${brandName ? ' značky ' + brandName : ''}${abvP ? ', obsah alkoholu ' + String(abvP).replace('.', ',') + ' %' : ''}${volP ? ', objem ' + String(volP).replace('.', ',') + ' l' : ''}${zemeP ? ', země původu ' + zemeP : ''}. `
+      + `V našem srovnání ji nabízí ${liveShops} ${liveShops === 1 ? 'obchod' : liveShops < 5 ? 'obchody' : 'obchodů'}${ppl ? `, cena vychází na ${cislo(ppl)} Kč za litr` : ''}${Math.abs(vsMed) >= 8 ? `, což je o ${Math.abs(vsMed)} % ${vsMed > 0 ? 'méně' : 'více'} než běžná cena v kategorii` : ''}.`
+    : '';
+  const faq: Array<{ q: string; a: string }> = offers.length ? [
+    { q: `Kolik stojí ${name}?`, a: `Nejnižší cena je ${cislo(Math.round(liveMin))} Kč${cheapest ? ' v obchodě ' + shopName(cheapest.domain) : ''}${stats.n > 1 ? `, nejvyšší ${cislo(Math.round(stats.max))} Kč (porovnáno ${stats.n} nabídek)` : ''}. Ceny aktualizujeme každý den.` },
+    { q: `Kde koupit ${name} nejlevněji?`, a: `${cheapest ? `Dnes nejlevněji v obchodě ${shopName(cheapest.domain)} za ${cislo(Math.round(liveMin))} Kč. ` : ''}Všechny obchody seřazené podle ceny najdete v přehledu nahoře; nakupujete přímo u e-shopu, cena je stejná.` },
+    ...(ppl ? [{ q: `Kolik stojí ${name} za litr?`, a: `Při nejnižší ceně vychází ${cislo(ppl)} Kč za litr${cdp?.ppl_med ? `, běžná cena za litr v kategorii je ${cislo(cdp.ppl_med)} Kč` : ''}.` }] : []),
+    ...(abvP ? [{ q: `Kolik procent alkoholu má ${name}?`, a: `Obsah alkoholu je ${String(abvP).replace('.', ',')} % podle parametrů produktu. Pro přepočet na konkrétní porci použijte naši kalkulačku alkoholu.` }] : []),
+  ] : [];
+  const brandMore = brand && brand.slug !== 'ostatni' && offers.length ? await db.prepare("SELECT p2.id FROM brand_products bp JOIN products p2 ON p2.id = bp.product_id WHERE bp.brand_id = ? AND p2.id <> ? AND p2.status = 'publish' AND p2.offer_count > 0 ORDER BY p2.pop DESC LIMIT 6")
+    .bind(brand.id, p.id).all<{ id: number }>().then((r) => cardsByIds(db, r.results.map((x) => x.id))).catch(() => [] as Card[]) : [] as Card[];
   const graph: unknown[] = [
     ...(img ? [{ '@type': 'ImageObject', '@id': img, url: img, inLanguage: 'cs' }] : []),
+    ...(faq.length >= 3 ? [{ '@type': 'FAQPage', '@id': url + '#faq', url, mainEntity: faq.map((x) => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: x.a } })) }] : []),
     { '@type': 'ItemPage', '@id': url + '#webpage', url, name: title, datePublished: isoPrague(p.created_at), dateModified: isoPrague(p.updated_at), isPartOf: { '@id': BASE + '/#website' }, ...(img ? { primaryImageOfPage: { '@id': img } } : {}), inLanguage: 'cs' },
     ...(offers.length ? [{
       '@type': 'Product', '@id': url + '#richSnippet', name, description, sku: String(p.id),
@@ -311,7 +354,7 @@ export async function productView(db: D1Database, id: number) {
   };
   // mu-plugin C2: context line links the first category with ≥ 3 products
   const ctxCat = catIds.map((cid) => tree.byId.get(cid)).find((c): c is Cat => !!c && c.count_direct >= 3) ?? null;
-  return { meta, p, name, offers, best, stats, history, brand, primary, crumbs, relCats, related, tree, img, gallery, params, ctxCat };
+  return { meta, p, name, offers, best, stats, history, brand, primary, crumbs, relCats, related, tree, img, gallery, params, ctxCat, autoText, faq, brandMore, brandName, ppl };
 }
 
 /** Split the product description at the empty Content Egg headings ("Kde koupit … nejlevněji", "Vývoj ceny …"):

@@ -87,6 +87,7 @@ const disc = best && best.price_old > best.price ? Math.round((1 - best.price / 
 					{best && <p>Nejnižší cena je teď <strong>{cena(best.price)}</strong> v obchodě {shopName(best.domain)}{v.stats.n > 1 ? ` — ceny všech ${cislo(v.stats.n)} nabídek porovnáváme ` : ' — nabídku najdete '}<a href="#ceny">v tabulce výše</a>.</p>}
 					<Fragment set:html={d.middle} />
 					<Fragment set:html={d.after} />
+					{v.autoText && <p>{v.autoText}</p>}
 				</div>
 			</section>
 			<aside>
@@ -114,6 +115,20 @@ const disc = best && best.price_old > best.price ? Math.round((1 - best.price / 
 				)}
 			</aside>
 		</div>
+
+		{v.faq.length >= 3 && (
+			<section class="sek faq ah-faq" aria-labelledby="h-faq" style="max-width:860px">
+				<h2 id="h-faq">Časté dotazy k produktu</h2>
+				{v.faq.map((f) => <details><summary>{f.q}</summary><div><p>{f.a}</p></div></details>)}
+			</section>
+		)}
+
+		{v.brandMore.length > 0 && v.brand && (
+			<section class="sek">
+				<div class="sek__h"><h2>Další produkty značky {decode(v.brand.name)}</h2><a href={`/znacka/${v.brand.slug}/`}>Všechny od značky {decode(v.brand.name)}</a></div>
+				<Mrizka items={v.brandMore} eager={false} />
+			</section>
+		)}
 
 		{v.related.length > 0 && (
 			<section class="sek">
