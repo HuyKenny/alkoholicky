@@ -6,33 +6,67 @@ import Vypis from './Vypis.astro';
 import type { categoryView } from '../../lib/views';
 import { cena, decode, texturize } from '../../lib/format';
 import { catIcon } from '../../lib/ikony';
+import { shopName } from '../../lib/shops';
 
 interface Props { v: Exclude<NonNullable<Awaited<ReturnType<typeof categoryView>>>, { redirect: string }> }
 const { v } = Astro.props;
 const m = v.meta;
 const first = v.page === 1 && !v.isFiltered;
 const tiles = v.kids.map((c) => ({ slug: c.slug, name: decode(c.name), count: c.count_total, img: v.imgs[String(c.id)] }));
-const name = decode(v.cat.name);
+const name = v.h1;
+const cd = first ? v.cd : null;
+const lit = (t: string) => { const m = /(\d(?:[.,]\d+)?)\s*l\b/i.exec(t); const x = m ? Number(m[1]!.replace(',', '.')) : 0; return x >= 0.3 && x <= 5 ? x : 0; };
 // alcohol strength and volume from the product name ("… 0,7l 40%"), like the WordPress table
 const abv = (t: string) => (/(\d{1,2}(?:[.,]\d)?)\s*%/.exec(t)?.[1] ?? '').replace('.', ',');
 const vol = (t: string) => (/(\d(?:[.,]\d+)?)\s*l\b/i.exec(t)?.[1] ?? '').replace('.', ',');
 const top = first ? v.items.slice(0, 8) : [];
 ---
 <Base title={m.title} description={m.description} canonical={m.canonical} prev={m.prev} next={m.next} robots={m.robots} graph={m.graph} jsonLd={m.jsonLd} shortOrg={m.shortOrg} pageType="category">
-	<Vypis crumbs={v.crumbs} h1={name} icon={catIcon(v.cat.slug, v.tree)} introHtml={first ? v.cat.description_html : undefined} tiles={tiles} tilesTitle={v.kidsTitle}
+	<Vypis lead={v.lead} subtitle={v.subtitle} crumbs={v.crumbs} h1={name} icon={catIcon(v.cat.slug, v.tree)} introHtml={first ? v.cat.description_html : undefined} tiles={tiles} tilesTitle={v.kidsTitle}
 		f={v.f} fc={v.fc} brands={v.brands} landings={v.landings} items={v.items} total={v.total} page={v.page} pages={v.pages} base={v.base} qs={v.qs}
 		empty="V této kategorii teď nejsou žádné produkty.">
 		{v.gift && (
 			<div class="sek box ah-gift-guides"><strong>Hledáte dárky na Vánoce?</strong> <a class="lnk" href="/firemni-vanocni-darky-s-alkoholem/">Firemní vánoční dárky s alkoholem podle rozpočtu</a> · <a class="lnk" href="/adventni-kalendare/">Adventní kalendáře s alkoholem</a></div>
 		)}
+		{cd && (
+			<section class="sek ah-prehled">
+				<h2>{name}: rychlý přehled cen</h2>
+				<ul class="hero__s">
+					<li><b>{cena(cd.lo)}</b> nejnižší cena</li>
+					<li><b>{cena(cd.med)}</b> běžná cena</li>
+					<li><b>{cena(cd.hi)}</b> většina nabídek do</li>
+					{cd.ppl_med ? <li><b>{cena(cd.ppl_med)}</b> průměr za litr</li> : null}
+					{v.shopsN ? <li><b>{v.shopsN}</b> obchodů v srovnání</li> : null}
+				</ul>
+				{cd.ppl && cd.ppl.length >= 5 && (
+					<>
+						<h3>Nejlevnější {name.toLowerCase()} podle ceny za litr</h3>
+						<div class="tw"><table class="ct">
+							<thead><tr><th>#</th><th>Produkt</th><th>Cena</th><th>Kč / litr</th><th>Obchod</th></tr></thead>
+							<tbody>{cd.ppl.map((p, i) => (
+								<tr><td>{i + 1}</td><td><a href={`/${p.s}/`}>{texturize(decode(p.n))}</a></td><td class="num">{cena(p.p)}</td><td class="num">{cena(p.l)}</td><td>{p.d ? shopName(p.d) : '—'}</td></tr>
+							))}</tbody>
+						</table></div>
+					</>
+				)}
+				{cd.ppa && cd.ppa.length >= 3 && (
+					<>
+						<h3>Nejlepší cena za alkohol (Kč za 100 ml čistého lihu)</h3>
+						<ol>{cd.ppa.slice(0, 5).map((p) => <li><a href={`/${p.s}/`}>{texturize(decode(p.n))}</a>: {cena(p.p)}, {String(p.a).replace('.', ',')} Kč / 100 ml čistého lihu ({p.d ? shopName(p.d) : ''})</li>)}</ol>
+					</>
+				)}
+				{cd.shops.length >= 3 && <p class="pozn">Nejčastěji nejnižší cenu u {name.toLowerCase()} má: {cd.shops.slice(0, 5).map((x) => `${shopName(x.d)} (${x.n}×)`).join(', ')}.{cd.u ? ' Údaje k ' + cd.u.split('-').reverse().map((x) => String(Number(x))).join('. ') + '.' : ''}</p>}
+				{cd.deals.length > 0 && <p class="pozn">Největší slevy dnes: {cd.deals.map((p, i) => <>{i ? ', ' : ''}<a href={`/${p.s}/`}>{texturize(decode(p.n))}</a> (−{p.x} %)</>)}.</p>}
+			</section>
+		)}
 		{top.length >= 3 && (
 			<section class="sek ah-ctable">
 				<h2>TOP {name} – srovnání cen</h2>
 				<div class="tw"><table class="ct">
-					<thead><tr><th>#</th><th>Produkt</th><th>Obsah alk.</th><th>Objem</th><th>Cena od</th><th></th></tr></thead>
+					<thead><tr><th>#</th><th>Produkt</th><th>Obsah alk.</th><th>Objem</th><th>Cena od</th><th>Kč / litr</th><th></th></tr></thead>
 					<tbody>{top.map((p, i) => { const n = decode(p.name); return (
 						<tr><td>{i + 1}</td><td><a href={`/${p.slug}/`}>{texturize(n)}</a></td><td>{abv(n) ? abv(n) + ' %' : '—'}</td><td>{vol(n) ? vol(n) + ' l' : '—'}</td>
-						<td class="num">{p.min_price > 0 ? 'od ' + cena(p.min_price) : '—'}</td><td><a class="btn btn--g" href={`/${p.slug}/`}>Porovnat ceny</a></td></tr>
+						<td class="num">{p.min_price > 0 ? 'od ' + cena(p.min_price) : '—'}</td><td class="num">{p.min_price > 0 && lit(n) ? cena(Math.round(p.min_price / lit(n))) : '—'}</td><td><a class="btn btn--g" href={`/${p.slug}/`}>Porovnat ceny</a></td></tr>
 					); })}</tbody>
 				</table></div>
 				<p class="pozn">Ceny porovnáváme z více než 20 e-shopů a aktualizujeme je denně. Pořadí dle oblíbenosti.</p>
@@ -49,6 +83,12 @@ const top = first ? v.items.slice(0, 8) : [];
 			<section class="sek faq ah-faq">
 				<h2>Často kladené dotazy</h2>
 				{v.faq.map((f) => <details><summary>{f.q}</summary><div set:html={f.a} /></details>)}
+			</section>
+		)}
+		{first && v.articles.length > 0 && (
+			<section class="sek ah-clanky">
+				<h2>Související články</h2>
+				<ul>{v.articles.map((a) => <li><a href={`/${a.slug}/`}>{decode(a.title)}</a></li>)}</ul>
 			</section>
 		)}
 		{first && v.cat.second_html && <section class="sek txt" set:html={v.cat.second_html} />}

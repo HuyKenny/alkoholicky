@@ -7,8 +7,9 @@ import {
 } from './db';
 import { isFiltered, parseFilters, toListQuery, toQuery } from './filters';
 import { BASE, OG_DEFAULT, PER_PAGE, POSTS_PER_PAGE, isoPrague } from './site';
-import { categoryTitle, descFrom, paged, postTitle, productTitle, rmTitle, robots, searchTitle, termTitle } from './seo';
-import { cislo, decode, stripTags } from './format';
+import { shopName } from './shops';
+import { categoryTitle, clamp, descFrom, paged, postTitle, productTitle, rmTitle, robots, searchTitle, termTitle } from './seo';
+import { cislo, decode, produktu, stripTags } from './format';
 import { validImage } from './img';
 import postcatSeo from '../data/postcat-seo.json';
 
@@ -57,8 +58,24 @@ export async function facetView(db: D1Database, id: number, page: number, sp: UR
   return categoryView(db, base.id, page, merged, { fp, user: sp });
 }
 
+/** H1 = the searched word (the category names are WordPress-era: "Rumy a ochucené rumy", "Giny"). The long name stays as the subtitle. */
+const H1: Record<string, string> = {
+  'rumy-a-ochucene-rumy': 'Rum', 'whisky-a-ochucene-whisky': 'Whisky', 'giny': 'Gin', 'vodky-a-ochucene-vodky': 'Vodka', 'tequily': 'Tequila', 'prosecco': 'Prosecco',
+  'vina': 'Víno', 'pivo-a-cider': 'Pivo', 'likery': 'Likér', 'konaky-armanaky-a-vinovice': 'Koňak', 'slivovice-svestkovice': 'Slivovice', 'sumiva-a-perliva-vina': 'Šumivé víno',
+  'absinthy': 'Absinth', 'brandy-a-gruzinak': 'Brandy', 'lihoviny': 'Alkohol', 'champagne-sampanske-vino': 'Šampaňské', 'bila-vina': 'Bílé víno', 'cervena-vina': 'Červené víno',
+  'ruzova-vina': 'Růžové víno', 'skotske-whisky': 'Skotská whisky', 'americke-whiskey': 'Bourbon a americká whiskey', 'irske-whiskey': 'Irská whiskey', 'tmave-rumy': 'Tmavý rum', 'bile-rumy': 'Bílý rum',
+  'medovina': 'Medovina', 'cidery': 'Cider', 'piva': 'Pivo', 'tequily-mezcaly': 'Tequila a mezcal',
+};
+/** article slug keyword per category (related articles block) */
+const ART: Record<string, string> = { 'rumy-a-ochucene-rumy': 'rum', 'whisky-a-ochucene-whisky': 'whisk', 'giny': 'gin', 'vodky-a-ochucene-vodky': 'vodk', 'tequily': 'tequil', 'prosecco': 'prosec',
+  'vina': 'vin', 'pivo-a-cider': 'piv', 'likery': 'liker', 'konaky-armanaky-a-vinovice': 'konak', 'slivovice-svestkovice': 'slivov', 'sumiva-a-perliva-vina': 'sumiv', 'absinthy': 'absint' };
+export interface CData { n: number; lo: number; med: number; hi: number; u?: string; cheapest: Array<{ s: string; n: string; p: number; d: string; k: number }>;
+  ppl?: Array<{ s: string; n: string; p: number; d: string; k: number; l: number }>; ppl_med?: number; ppa?: Array<{ s: string; n: string; p: number; d: string; a: number }>;
+  shops: Array<{ d: string; n: number }>; deals: Array<{ s: string; n: string; p: number; d: string; x: number }>; top: Array<{ s: string; n: string; p: number; d: string; k: number }> }
+
 export async function categoryView(db: D1Database, catId: number, page: number, sp: URLSearchParams, facet?: { fp: FacetPage; user: URLSearchParams }) {
-  const [cat0, tree, fc, brands, imgs, lands] = await Promise.all([loadCategory(db, catId), catTree(db), facets(db, `f:${catId}`), brandList(db), catImages(db),
+  const [cat0, tree, fc, brands, imgs, cdRaw, lands] = await Promise.all([loadCategory(db, catId), catTree(db), facets(db, `f:${catId}`), brandList(db), catImages(db),
+    siteCache(db, facet ? `cdata:f:${facet.fp.slug}` : `cdata:${catId}`),
     facet ? Promise.resolve([] as FacetPage[]) : db.prepare('SELECT * FROM facet_pages WHERE noindex = 0 AND total >= min_products AND base_slug = (SELECT slug FROM categories WHERE id = ?)').bind(catId).all<FacetPage>().then((r) => r.results).catch(() => [] as FacetPage[])]);
   if (!cat0) return null;
   const fp = facet?.fp;
@@ -101,8 +118,33 @@ export async function categoryView(db: D1Database, catId: number, page: number, 
   const noindex = fp ? fp.noindex === 1 || total < fp.min_products : cat.noindex === 1 || cat.seo_robots.includes('noindex') || cat.count_total === 0;
   let faq: Array<{ q: string; a: string }> = [];
   try { faq = page === 1 && cat.faq_json ? JSON.parse(cat.faq_json) : []; } catch { /* broken JSON = no FAQ */ }
+  // live price data (nightly, kategorie-data.py): H1, lead paragraph, quick overview, dynamic description and FAQ answers with real numbers
+  let cd: CData | null = null;
+  try { cd = cdRaw ? JSON.parse(cdRaw) as CData : null; } catch { /* no data */ }
+  const h1 = fp ? decode(fp.h1) : (H1[cat.slug] ?? decode(cat.name));
+  const subtitle = !fp && H1[cat.slug] && H1[cat.slug] !== decode(cat.name) ? decode(cat.name) : '';
+  // shops in the comparison: the same number as the homepage (all shops with an active offer); the category filter lists only the biggest few
+  let shopsN = 0;
+  try { shopsN = ((JSON.parse((await siteCache(db, 'home')) ?? '{}') as { shops?: Array<[string, number]> }).shops ?? []).length; } catch { /* no home cache */ }
+  const kcs = (n: number) => `${cislo(n)} Kč`;
+  const short = (t: string) => t.replace(/\s+/g, ' ').replace(/\s+\d[\d,.]*\s*(l|cl|ml)\b.*$/i, '').trim();
+  let lead = '';
+  if (cd && page === 1 && !filtered) {
+    const c0 = cd.cheapest[0];
+    lead = `<p class="lead"><strong>${h1}</strong>: porovnáváme ${cislo(cd.n)} ${produktu(cd.n)} z ${shopsN || '20+'} e-shopů. Ceny začínají na ${kcs(cd.lo)}, běžná cena je ${kcs(cd.med)} a většina nabídek stojí do ${kcs(cd.hi)}.`
+      + (c0 ? ` Nejlevnější lahev: <a href="/${c0.s}/">${decode(short(c0.n))}</a> za ${kcs(c0.p)}${c0.d ? ' (' + shopName(c0.d) + ')' : ''}.` : '')
+      + (cd.ppl_med ? ` Průměrná cena za litr je ${kcs(cd.ppl_med)}.` : '') + ` Ceny aktualizujeme každý den.</p>`;
+    if (faq.length) faq = [
+      { q: `Kolik stojí ${h1.toLowerCase()}?`, a: `Aktuálně od ${kcs(cd.lo)}. Běžná cena v našem srovnání je ${kcs(cd.med)}, většina nabídek je do ${kcs(cd.hi)}. Cena závisí na druhu, stáří a objemu lahve${cd.ppl_med ? `, orientačně vychází ${kcs(cd.ppl_med)} za litr` : ''}.` },
+      ...(c0 ? [{ q: `Kde koupit ${h1.toLowerCase()} nejlevněji?`, a: `Nejnižší cenu najdete u každého produktu v přehledu obchodů seřazených podle ceny. Dnes je nejlevnější ${decode(short(c0.n))} za ${kcs(c0.p)}${c0.d ? ' v obchodě ' + shopName(c0.d) : ''}. Nakupujete přímo u e-shopu, my ceny jen porovnáváme.` }] : []),
+      ...faq];
+  }
+  const artKw = ART[cat.slug];
+  const articles = page === 1 && !filtered && artKw ? await db.prepare("SELECT slug, title FROM posts WHERE type = 'post' AND status = 'publish' AND slug LIKE ? ORDER BY published_at DESC LIMIT 4").bind(`%${artKw}%`).all<{ slug: string; title: string }>().then((r) => r.results).catch(() => [] as Array<{ slug: string; title: string }>) : [];
+  const liveDesc = cd && !filtered ? clamp(`${h1}: ${cislo(cd.n)} ${produktu(cd.n)} od ${kcs(cd.lo)}${cd.cheapest[0] ? `, nejlevnější ${decode(short(cd.cheapest[0].n))} za ${kcs(cd.cheapest[0].p)}` : ''}. Porovnání cen z ${shopsN || '20+'} e-shopů, aktualizace denně.`, 158) : '';
   const meta: Meta = {
-    title, description: descFrom(cat.seo_desc, cat.description_html, { term: decode(cat.name) },
+    title: shopsN >= 20 ? title.replace('20+', String(shopsN)) : title,
+    description: liveDesc || descFrom(cat.seo_desc, cat.description_html, { term: decode(cat.name) },
       fc?.n ? `Porovnejte ceny ${cislo(fc.n)} produktů z kategorie ${decode(cat.name)} v ${fc.s.length} ověřených e-shopech.${fc.lo ? ` Nejlevněji od ${cislo(fc.lo)} Kč.` : ''}` : '', page),
     // filtered / re-sorted listings: noindex, follow and no canonical (the indexable listing is the plain URL)
     ...(noindex || filtered ? {} : { canonical: url }), robots: filtered ? ['noindex', 'follow'] : robots(noindex, cat.seo_robots),
@@ -119,7 +161,7 @@ export async function categoryView(db: D1Database, catId: number, page: number, 
   // gift categories link the seasonal guides (mu-plugin v2.6: Q4 corporate orders)
   const gift = ['darkove-boxy', 'darkove-baleni', 'darkova-baleni-alkoholu', 'darky-z-alkohol-cz', 'darkove-sady-na-vyrobu-alkoholu'].includes(cat.slug) && page === 1;
   return {
-    meta, cat, crumbs, items, total, page, pages, base, f, qs: toQuery(fp ? parseFilters(facet!.user) : f), kids, kidsTitle, tree, fc, brands, imgs, landings, faq, gift, picks,
+    meta, cat, crumbs, items, total, page, pages, base, f, qs: toQuery(fp ? parseFilters(facet!.user) : f), kids, kidsTitle, tree, fc, brands, imgs, landings, faq, gift, picks, h1, subtitle, lead, cd, articles, shopsN,
     guide: page === 1 && !filtered ? cat.guide_html : '',
     isFiltered: filtered,
   };
@@ -213,10 +255,17 @@ export async function productView(db: D1Database, id: number) {
   const primary = cats.find((c) => !c.noindex) ?? cats[0];
   const chain = primary ? ancestry(tree, primary.id) : [];
   const url = abs(`/${p.slug}/`);
-  const title = productTitle(p.name, p.seo_title);
+  // live price in the snippet: "Jack Daniel's 0,7 l od 499 Kč | 9 obchodů" (the old "Kde koupit nejlevněji? (2026)" says nothing a competitor's title does not)
+  const liveMin = offers.length ? Math.min(...offers.map((o) => o.price)) : 0;
+  const liveShops = new Set(offers.map((o) => o.domain)).size;
+  const dynTitle = liveMin > 0 ? `${decode(p.name)} od ${cislo(Math.round(liveMin))} Kč | ${liveShops} ${liveShops === 1 ? 'obchod' : liveShops < 5 ? 'obchody' : 'obchodů'}` : '';
+  const title = !p.seo_title && dynTitle && dynTitle.length <= 66 ? dynTitle : productTitle(p.name, p.seo_title);
   // seo_desc = Rank Math description or the raw (untexturized) short description from the migration
   const prices0 = offers.map((o) => o.price);
-  const description = descFrom(p.seo_desc, p.short_html, { title: name, clamp: true },
+  const l0 = /(\d(?:[.,]\d+)?)\s*l\b/i.exec(name); const lit = l0 ? Number(l0[1]!.replace(',', '.')) : 0;
+  const cheapest = offers.find((o) => o.price === liveMin);
+  const liveDesc = offers.length ? clamp(`${name}: nejnižší cena ${cislo(Math.round(liveMin))} Kč${cheapest ? ' v ' + shopName(cheapest.domain) : ''}, porovnáno ${liveShops} ${liveShops === 1 ? 'obchod' : liveShops < 5 ? 'obchody' : 'obchodů'}${lit >= 0.3 && lit <= 5 ? `, ${cislo(Math.round(liveMin / lit))} Kč za litr` : ''}. Ceny aktualizujeme denně.`, 158) : '';
+  const description = (!p.seo_desc && liveDesc) || descFrom(p.seo_desc, p.short_html, { title: name, clamp: true },
     offers.length ? `${name} – porovnejte ceny v ${new Set(offers.map((o) => o.domain)).size} obchodech, nejlevněji od ${cislo(Math.min(...prices0))} Kč.` : '');
   // without any offer the page is thin and a Product snippet without offers is invalid → noindex, no Product node
   const noindex = p.noindex === 1 || offers.length === 0;

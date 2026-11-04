@@ -16,8 +16,9 @@ import { robots } from '../../lib/seo';
 interface Props { v: Awaited<ReturnType<typeof homeView>> }
 const { v } = Astro.props;
 // title, description, H1, the SEO text and the FAQ (FAQPage = the page node) are the texts Google knows from WordPress
-const title = 'Alkohol — srovnání cen z 20+ e-shopů | Alkoholický';
-const description = 'Alkohol na jednom místě: srovnáme ceny whisky, rumu, ginu i vína z více než 20 e-shopů. Najděte alkohol v akci a kupte ho za nejlepší cenu.';
+const shopsN = v.home.shops.length || 20;
+const title = `Alkohol online – srovnání cen z ${shopsN} e-shopů | Alkoholický`;
+const description = `Alkohol online za nejlepší cenu: srovnáváme ${cislo(v.home.products)} produktů z ${shopsN} e-shopů (whisky, rum, gin, víno, pivo). Ceny denně, nejlevnější nabídky a slevy.`;
 const TILES: Array<[string, string, string]> = [
 	['whisky-a-ochucene-whisky', 'Whisky', 'whisky'], ['rumy-a-ochucene-rumy', 'Rum', 'rum'], ['giny', 'Gin', 'gin'], ['vodky-a-ochucene-vodky', 'Vodka', 'vodka'],
 	['likery', 'Likéry', 'likery'], ['konaky', 'Koňak', 'konak'], ['tequily', 'Tequila', 'tequila'], ['vina', 'Víno', 'vino'],
@@ -49,8 +50,8 @@ const jsonLd: unknown[] = [];
 	<section class="hero">
 		<div class="w">
 			<div>
-			<h1>Alkohol za <em>nejlepší ceny</em> na jednom místě</h1>
-			<p class="hero__l">Srovnáváme ceny whisky, rumu, ginu, vína a dalšího alkoholu z více než 20 ověřených e-shopů. Najděte, kde stejnou lahev koupíte nejlevněji.</p>
+			<h1>Alkohol online za <em>nejlepší ceny</em> na jednom místě</h1>
+			<p class="hero__l">Srovnáváme ceny {cislo(v.home.products)} druhů alkoholu (whisky, rum, gin, vodka, víno, pivo) z {shopsN} ověřených e-shopů. Najděte, kde stejnou lahev koupíte nejlevněji.</p>
 			<div class="hs">
 				<form class="hs__f" role="search" method="get" action="/" autocomplete="off">
 					<label class="vh" for="hs-hero">Hledat produkt, značku nebo kategorii</label>
@@ -78,6 +79,18 @@ const jsonLd: unknown[] = [];
 			<div class="sek__h"><h2 id="h-kat">Co dnes hledáte?</h2></div>
 			<ul class="kt">
 				{tiles.map((t) => <li><a href={`/${t.slug}/`}><img src={t.img} alt="" width="92" height="92" loading="lazy" decoding="async" /><b>{t.label}</b><small>{cislo(t.count)} produktů</small></a></li>)}
+			</ul>
+		</section>
+
+		<section class="sek" aria-labelledby="h-druh">
+			<div class="sek__h"><h2 id="h-druh">Alkohol podle druhu a ceny</h2></div>
+			<ul class="hero__q">
+				<li><a href="/whisky-a-ochucene-whisky/">whisky</a></li><li><a href="/skotske-whisky/">skotská whisky</a></li><li><a href="/single-malt-whisky/">single malt</a></li><li><a href="/americke-whiskey/">bourbon</a></li>
+				<li><a href="/rumy-a-ochucene-rumy/">rum</a></li><li><a href="/tmave-rumy/">tmavý rum</a></li><li><a href="/giny/">gin</a></li><li><a href="/london-dry-gin/">London Dry gin</a></li>
+				<li><a href="/vodky-a-ochucene-vodky/">vodka</a></li><li><a href="/tequily/">tequila</a></li><li><a href="/likery/">likéry</a></li><li><a href="/konaky/">koňak</a></li>
+				<li><a href="/vina/">víno</a></li><li><a href="/prosecco/">prosecco</a></li><li><a href="/pivo-a-cider/">pivo a cider</a></li><li><a href="/absinthy/">absint</a></li>
+				<li><a href="/alkohol-do-300-kc/">levný alkohol do 300 Kč</a></li><li><a href="/alkohol-do-500-kc/">alkohol do 500 Kč</a></li><li><a href="/alkohol-do-1000-kc/">alkohol do 1 000 Kč</a></li><li><a href="/alkohol-v-akci/">alkohol v akci</a></li>
+				<li><a href="/jak-koupit-alkohol-online-levne/">jak koupit alkohol online</a></li><li><a href="/darky-z-alkohol-cz/">dárky s alkoholem</a></li>
 			</ul>
 		</section>
 
