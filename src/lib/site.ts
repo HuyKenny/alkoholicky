@@ -12,15 +12,19 @@ export const OG_HOME = OG_DEFAULT;
 export const PER_PAGE = 24;
 export const POSTS_PER_PAGE = 12;
 
+/** Founder (Kenny's personal site huy.cz is the Person entity; same node on all his projects). */
+export const FOUNDER = { '@type': 'Person', '@id': 'https://huy.cz/#kenny', name: 'Ha Duy Huy', alternateName: 'Kenny', url: 'https://huy.cz/', jobTitle: 'SEO konzultant' };
+
 /** `full` = Organization with logo (every page except product-category archives, where Rank Math prints a short node). */
 export function orgGraph(short = false, searchAction = false): unknown[] {
   return [
     short
-      ? { '@type': 'Organization', '@id': BASE + '/#organization', name: 'Alkoholický.cz', sameAs: ['https://www.facebook.com/alkoholicky'] }
+      ? { '@type': 'Organization', '@id': BASE + '/#organization', name: 'Alkoholický.cz', sameAs: ['https://www.facebook.com/alkoholicky'], founder: FOUNDER }
       : {
         '@type': 'Organization', '@id': BASE + '/#organization', name: 'Alkoholický.cz', url: BASE, sameAs: ['https://www.facebook.com/alkoholicky'],
         logo: { '@type': 'ImageObject', '@id': BASE + '/#logo', url: LOGO_URL, contentUrl: LOGO_URL, caption: SITE_NAME, inLanguage: 'cs', width: '600', height: '120' },
         image: { '@id': BASE + '/#logo' },
+        founder: FOUNDER,
       },
     {
       '@type': 'WebSite', '@id': BASE + '/#website', url: BASE, name: SITE_NAME, alternateName: 'Srovnávač a vyhledávač alkoholu', publisher: { '@id': BASE + '/#organization' }, inLanguage: 'cs',
