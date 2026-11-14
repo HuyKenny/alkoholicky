@@ -13,6 +13,16 @@ const m = v.meta;
 	<Vypis lead={v.lead} crumbs={v.crumbs} h1={decode(v.brand.name)} introHtml={v.page === 1 && !v.isFiltered ? v.brand.description_html : undefined}
 		f={v.f} fc={v.fc} brands={v.brands} cats={v.tree.byId} items={v.items} total={v.total} page={v.page} pages={v.pages} base={v.base} qs={v.qs}
 		empty="Od této značky teď nemáme žádné produkty.">
+		{v.page === 1 && !v.isFiltered && v.shopOffers.length > 0 && (
+			<section class="sek ah-obchod">
+				<h2>Nejoblíbenější nabídky obchodu {shopName(v.shopDomain)}</h2>
+				<p class="pozn">{shopName(v.shopDomain)} je obchod, jehož ceny porovnáváme. Nakupujete přímo u něj, cena je stejná jako na jeho webu.</p>
+				<div class="tw"><table class="ct">
+					<thead><tr><th>Produkt</th><th>Cena</th><th></th></tr></thead>
+					<tbody>{v.shopOffers.map((o) => <tr><td><a href={`/${o.slug}/`}>{texturize(decode(o.name))}</a></td><td class="num">{cena(o.price)}</td><td><a class="btn btn--g" href={`/go/${o.go_slug}/?ctx=obchod`} target="_blank" rel="nofollow sponsored">Koupit v {shopName(v.shopDomain)}</a></td></tr>)}</tbody>
+				</table></div>
+			</section>
+		)}
 		{v.page === 1 && !v.isFiltered && v.cd && (
 			<section class="sek ah-prehled">
 				<h2>{decode(v.brand.name)}: přehled cen</h2>

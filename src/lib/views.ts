@@ -61,14 +61,14 @@ export async function facetView(db: D1Database, id: number, page: number, sp: UR
 /** H1 = the searched word (the category names are WordPress-era: "Rumy a ochucené rumy", "Giny"). The long name stays as the subtitle. */
 const H1: Record<string, string> = {
   'rumy-a-ochucene-rumy': 'Rum', 'whisky-a-ochucene-whisky': 'Whisky', 'giny': 'Gin', 'vodky-a-ochucene-vodky': 'Vodka', 'tequily': 'Tequila', 'prosecco': 'Prosecco',
-  'vina': 'Víno', 'pivo-a-cider': 'Pivo', 'likery': 'Likér', 'konaky-armanaky-a-vinovice': 'Koňak', 'slivovice-svestkovice': 'Slivovice', 'sumiva-a-perliva-vina': 'Šumivé víno',
+  'vina': 'Víno', 'pivo': 'Pivo', 'likery': 'Likér', 'konaky-armanaky-a-vinovice': 'Koňak', 'slivovice-svestkovice': 'Slivovice', 'sumiva-a-perliva-vina': 'Šumivé víno',
   'absinthy': 'Absinth', 'brandy-a-gruzinak': 'Brandy', 'lihoviny': 'Alkohol', 'champagne-sampanske-vino': 'Šampaňské', 'bila-vina': 'Bílé víno', 'cervena-vina': 'Červené víno',
   'ruzova-vina': 'Růžové víno', 'skotske-whisky': 'Skotská whisky', 'americke-whiskey': 'Bourbon a americká whiskey', 'irske-whiskey': 'Irská whiskey', 'tmave-rumy': 'Tmavý rum', 'bile-rumy': 'Bílý rum',
-  'medovina': 'Medovina', 'cidery': 'Cider', 'piva': 'Pivo', 'tequily-mezcaly': 'Tequila a mezcal',
+  'medovina': 'Medovina', 'cidery': 'Cider', 'tequily-mezcaly': 'Tequila a mezcal',
 };
 /** article slug keyword per category (related articles block) */
 const ART: Record<string, string> = { 'rumy-a-ochucene-rumy': 'rum', 'whisky-a-ochucene-whisky': 'whisk', 'giny': 'gin', 'vodky-a-ochucene-vodky': 'vodk', 'tequily': 'tequil', 'prosecco': 'prosec',
-  'vina': 'vin', 'pivo-a-cider': 'piv', 'likery': 'liker', 'konaky-armanaky-a-vinovice': 'konak', 'slivovice-svestkovice': 'slivov', 'sumiva-a-perliva-vina': 'sumiv', 'absinthy': 'absint' };
+  'vina': 'vin', 'pivo': 'piv', 'likery': 'liker', 'konaky-armanaky-a-vinovice': 'konak', 'slivovice-svestkovice': 'slivov', 'sumiva-a-perliva-vina': 'sumiv', 'absinthy': 'absint' };
 export interface CData { n: number; lo: number; med: number; hi: number; u?: string; cheapest: Array<{ s: string; n: string; p: number; d: string; k: number }>;
   ppl?: Array<{ s: string; n: string; p: number; d: string; k: number; l: number }>; ppl_med?: number; ppa?: Array<{ s: string; n: string; p: number; d: string; a: number }>;
   shops: Array<{ d: string; n: number }>; deals: Array<{ s: string; n: string; p: number; d: string; x: number }>; top: Array<{ s: string; n: string; p: number; d: string; k: number }> }
@@ -178,6 +178,12 @@ function only(f: ReturnType<typeof parseFilters>): string | null {
 }
 
 // ---------- brand ----------
+/** Brand pages that are really SHOPS (Lihovárek, Warehouse #1, Alkohol.cz …): people search the shop name; the page shows the shop's bestsellers with buy links. */
+const SHOP_BRAND: Record<string, string> = {
+  'lihovarek-cz': 'lihovarek.cz', 'warehouse-1': 'warehouse1.cz', 'alkohol-cz': 'alkohol.cz', 'drinkcentrum-cz': 'drinkcentrum.cz', 'topalkohol-cz': 'topalkohol.cz', 'svetnapoju-cz': 'svetnapoju.cz',
+  'vinisto-cz': 'vinisto.cz', 'vinokral-cz': 'vinokral.cz', 'barman-cz': 'barman.cz', 'dramroom-cz': 'dramroom.cz', 'destilerka-cz': 'destilerka.cz', 'donpealo-cz': 'donpealo.cz',
+  'wineplanet-cz': 'wineplanet.cz', 'simplywines-cz': 'simplywines.cz', 'ocenenavina-cz': 'ocenenavina.cz', 'osobnivinoteka-cz': 'osobnivinoteka.cz', 'panalfred-cz': 'panalfred.cz',
+};
 export async function brandView(db: D1Database, slug: string, page: number, sp: URLSearchParams) {
   const [b, tree, brands] = await Promise.all([loadBrand(db, slug), catTree(db), brandList(db)]);
   if (!b) return null;
@@ -220,8 +226,11 @@ export async function brandView(db: D1Database, slug: string, page: number, sp: 
       ...(c0 ? [{ q: `Kde koupit ${bn} nejlevněji?`, a: `Dnes je nejlevnější ${decode(short(c0.n))} za ${kcs(c0.p)}${c0.d ? ' v obchodě ' + shopName(c0.d) : ''}. U každého produktu vidíte všechny obchody seřazené podle ceny; nakupujete přímo u e-shopu, my ceny jen porovnáváme.` }] : []),
       ...faq];
   }
+  const shopDomain = SHOP_BRAND[b.slug] ?? '';
+  const shopOffers = shopDomain && page === 1 && !filtered ? await db.prepare("SELECT o.go_slug, o.price, p.slug, p.name FROM offers o JOIN products p ON p.id = o.product_id WHERE o.domain = ? AND o.active = 1 AND p.status = 'publish' ORDER BY p.pop DESC LIMIT 8")
+    .bind(shopDomain).all<{ go_slug: string; price: number; slug: string; name: string }>().then((r) => r.results).catch(() => [] as Array<{ go_slug: string; price: number; slug: string; name: string }>) : [];
   const meta: Meta = {
-    title: dynTitle && b.slug !== 'karloff-tatratea-tatransky-caj' ? dynTitle : title,
+    title: b.slug === 'karloff-tatratea-tatransky-caj' && cd && page === 1 && !filtered ? `Tatranský čaj cena od ${kcs(cd.lo)} – druhy 17–72 % | Alkoholický` : dynTitle && b.slug !== 'karloff-tatratea-tatransky-caj' ? dynTitle : title,
     description: dynDesc && !b.seo_desc ? dynDesc : descFrom(b.seo_desc, '', {}, brandSeo(b).desc, page),
     ...(thin || filtered ? {} : { canonical: url }), robots: filtered ? ['noindex', 'follow'] : robots(thin),
     ...(page > 1 && !filtered ? { prev: abs(pagePath(base, page - 1)) } : {}),
@@ -229,7 +238,7 @@ export async function brandView(db: D1Database, slug: string, page: number, sp: 
     graph: [faq.length ? { ...collection(url, title), '@type': 'FAQPage', mainEntity: faq.map((x) => ({ '@type': 'Question', name: stripTags(x.q), acceptedAnswer: { '@type': 'Answer', text: stripTags(x.a) } })) } : collection(url, title)],
     jsonLd: [breadcrumbLd(crumbs), itemListLd(abs(base), decode(b.name), items)].filter(Boolean),
   };
-  return { meta, faq, lead, cd, shopsN, brand: b, crumbs, items, total, page, pages, base, f, qs: toQuery(f), tree, fc, brands, isFiltered: filtered };
+  return { meta, faq, lead, cd, shopsN, shopDomain, shopOffers, brand: b, crumbs, items, total, page, pages, base, f, qs: toQuery(f), tree, fc, brands, isFiltered: filtered };
 }
 
 /** mu-plugin ah_claude_brand_seo (v2.0): title/description of brands without their own Rank Math texts. */
