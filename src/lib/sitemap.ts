@@ -49,13 +49,16 @@ export async function collect(db: D1Database): Promise<Record<string, U[]>> {
   chunk('product_brand-sitemap', map(brands, '/znacka/'));
   // facet landings sit in the category sitemap (one file, GSC-registered)
   chunk('product_cat-sitemap', [...map(cats), ...map(facetRows)]);
+  // priority sitemap (~1 000 URLs: categories, landings, pages, all articles, the 300 biggest brands): a short list with exact lastmod that Google can work through quickly,
+  // submitted separately in GSC (the 25 000 product URLs dilute the crawl of a DR 17 site, new pages waited 2+ weeks)
+  out['priority-sitemap'] = [...out['page-sitemap']!, ...map(cats), ...map(facetRows), ...out['post-sitemap']!, ...map(brands.slice(0, 300), '/znacka/')];
   return out;
 }
 
 export async function rebuildSitemaps(db: D1Database): Promise<{ files: number; urls: number }> {
   const files = await collect(db);
   const now = new Date().toISOString();
-  const order = ['post-sitemap', 'page-sitemap', ...Object.keys(files).filter((k) => k.startsWith('product-sitemap')), 'category-sitemap',
+  const order = ['priority-sitemap', 'post-sitemap', 'page-sitemap', ...Object.keys(files).filter((k) => k.startsWith('product-sitemap')), 'category-sitemap',
     ...Object.keys(files).filter((k) => k.startsWith('product_brand-sitemap')), ...Object.keys(files).filter((k) => k.startsWith('product_cat-sitemap'))];
   const index = HEAD + '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     order.filter((k) => files[k]?.length).map((k) => `\t<sitemap>\n\t\t<loc>${BASE}/${k}.xml</loc>\n\t\t<lastmod>${latest(files[k]!)}</lastmod>\n\t</sitemap>`).join('\n') + '\n</sitemapindex>';

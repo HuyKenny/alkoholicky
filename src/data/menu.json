@@ -534,7 +534,7 @@
  {
   "id": 955,
   "parent": 950,
-  "title": "Svařák a punč",
+  "title": "Svařák, grog a punč",
   "url": "/svarak-recept-koreni-a-nejcastejsi-chyby/",
   "order": 910
  },
@@ -542,7 +542,7 @@
   "id": 956,
   "parent": 950,
   "title": "Vaječný likér",
-  "url": "/vajecny-liker-ze-salka/",
+  "url": "/vajecny-liker-recept-a-co-koupit/",
   "order": 911
  },
  {
@@ -551,5 +551,26 @@
   "title": "Co pít na Silvestra",
   "url": "/co-pit-na-silvestra/",
   "order": 912
+ },
+ {
+  "id": 958,
+  "parent": 950,
+  "title": "Adventní kalendář pro muže",
+  "url": "/adventni-kalendar-pro-muze/",
+  "order": 913
+ },
+ {
+  "id": 959,
+  "parent": 950,
+  "title": "Silvestrovský punč a sekt",
+  "url": "/silvestrovsky-punc/",
+  "order": 914
+ },
+ {
+  "id": 960,
+  "parent": 67,
+  "title": "Koktejly a recepty",
+  "url": "/koktejly/",
+  "order": 904
  }
 ]
