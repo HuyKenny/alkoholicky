@@ -17,6 +17,7 @@ Disallow: /*?*filter_
 Disallow: /*?*product_brand=
 Disallow: /*?*p_
 
+${['GPTBot', 'ClaudeBot', 'Claude-SearchBot', 'OAI-SearchBot', 'PerplexityBot', 'CCBot', 'Applebot-Extended', 'Google-Extended'].map((b) => `User-agent: ${b}\nCrawl-delay: 10\nDisallow: /go/\nDisallow: /api/\n`).join('\n')}
 ${['AhrefsBot', 'SemrushBot', 'MJ12bot', 'DotBot', 'BLEXBot', 'PetalBot', 'Baiduspider', 'Amazonbot'].map((b) => `User-agent: ${b}\nDisallow: /\n`).join('\n')}
 Sitemap: https://alkoholicky.cz/sitemap_index.xml
 `;
