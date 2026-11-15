@@ -572,5 +572,47 @@
   "title": "Koktejly a recepty",
   "url": "/koktejly/",
   "order": 904
+ },
+ {
+  "id": 961,
+  "parent": 31,
+  "title": "Limoncello",
+  "url": "/limoncello/",
+  "order": 410
+ },
+ {
+  "id": 962,
+  "parent": 31,
+  "title": "Amaretto",
+  "url": "/amaretto/",
+  "order": 411
+ },
+ {
+  "id": 963,
+  "parent": 31,
+  "title": "Fernet",
+  "url": "/fernet/",
+  "order": 412
+ },
+ {
+  "id": 964,
+  "parent": 31,
+  "title": "Vermuty",
+  "url": "/vermuty/",
+  "order": 413
+ },
+ {
+  "id": 965,
+  "parent": 31,
+  "title": "Griotka",
+  "url": "/griotka/",
+  "order": 414
+ },
+ {
+  "id": 966,
+  "parent": 31,
+  "title": "Kávové likéry",
+  "url": "/kavove-likery/",
+  "order": 415
  }
 ]
