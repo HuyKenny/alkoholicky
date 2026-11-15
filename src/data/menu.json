@@ -733,5 +733,54 @@
   "title": "Sherry",
   "url": "/sherry/",
   "order": 517
+ },
+ {
+  "id": 984,
+  "parent": 48,
+  "title": "Pivo IPA",
+  "url": "/pivo-ipa/",
+  "order": 607
+ },
+ {
+  "id": 985,
+  "parent": 48,
+  "title": "Stout a porter",
+  "url": "/pivo-stout-porter/",
+  "order": 608
+ },
+ {
+  "id": 986,
+  "parent": 41,
+  "title": "Ledové víno",
+  "url": "/ledove-vino/",
+  "order": 518
+ },
+ {
+  "id": 987,
+  "parent": 41,
+  "title": "Moscato a Asti",
+  "url": "/moscato-asti/",
+  "order": 519
+ },
+ {
+  "id": 988,
+  "parent": 24,
+  "title": "Armagnac",
+  "url": "/armagnac/",
+  "order": 307
+ },
+ {
+  "id": 989,
+  "parent": 24,
+  "title": "Metaxa",
+  "url": "/metaxa/",
+  "order": 308
+ },
+ {
+  "id": 990,
+  "parent": 31,
+  "title": "Triple sec a Cointreau",
+  "url": "/triple-sec/",
+  "order": 416
  }
 ]
