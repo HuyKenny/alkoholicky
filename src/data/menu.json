@@ -614,5 +614,47 @@
   "title": "Kávové likéry",
   "url": "/kavove-likery/",
   "order": 415
+ },
+ {
+  "id": 967,
+  "parent": 950,
+  "title": "Dárky pro tátu a dědu",
+  "url": "/darek-pro-tatu-a-dedu/",
+  "order": 915
+ },
+ {
+  "id": 968,
+  "parent": 950,
+  "title": "Dárkové koše",
+  "url": "/darkove-kose/",
+  "order": 916
+ },
+ {
+  "id": 969,
+  "parent": 950,
+  "title": "Dárky se skleničkami",
+  "url": "/darkove-sety-se-sklenicemi/",
+  "order": 917
+ },
+ {
+  "id": 970,
+  "parent": 950,
+  "title": "Degustační sady",
+  "url": "/degustacni-sady/",
+  "order": 918
+ },
+ {
+  "id": 971,
+  "parent": 950,
+  "title": "Whisky adventní kalendáře",
+  "url": "/whisky-adventni-kalendare/",
+  "order": 919
+ },
+ {
+  "id": 972,
+  "parent": 950,
+  "title": "Nealko prosecco",
+  "url": "/nealko-prosecco/",
+  "order": 920
  }
 ]
