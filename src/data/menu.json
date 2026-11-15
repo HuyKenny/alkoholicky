@@ -656,5 +656,82 @@
   "title": "Nealko prosecco",
   "url": "/nealko-prosecco/",
   "order": 920
+ },
+ {
+  "id": 973,
+  "parent": 41,
+  "title": "Chardonnay",
+  "url": "/chardonnay-vino/",
+  "order": 507
+ },
+ {
+  "id": 974,
+  "parent": 41,
+  "title": "Ryzlink rýnský",
+  "url": "/ryzlink-rynsky/",
+  "order": 508
+ },
+ {
+  "id": 975,
+  "parent": 41,
+  "title": "Sauvignon Blanc",
+  "url": "/sauvignon-blanc/",
+  "order": 509
+ },
+ {
+  "id": 976,
+  "parent": 41,
+  "title": "Veltlínské zelené",
+  "url": "/veltlinske-zelene/",
+  "order": 510
+ },
+ {
+  "id": 977,
+  "parent": 41,
+  "title": "Pinot Noir",
+  "url": "/pinot-noir/",
+  "order": 511
+ },
+ {
+  "id": 978,
+  "parent": 41,
+  "title": "Merlot",
+  "url": "/merlot/",
+  "order": 512
+ },
+ {
+  "id": 979,
+  "parent": 41,
+  "title": "Cabernet Sauvignon",
+  "url": "/cabernet-sauvignon/",
+  "order": 513
+ },
+ {
+  "id": 980,
+  "parent": 41,
+  "title": "Frankovka",
+  "url": "/frankovka/",
+  "order": 514
+ },
+ {
+  "id": 981,
+  "parent": 41,
+  "title": "Modrý Portugal",
+  "url": "/modry-portugal/",
+  "order": 515
+ },
+ {
+  "id": 982,
+  "parent": 41,
+  "title": "Portské víno",
+  "url": "/porto/",
+  "order": 516
+ },
+ {
+  "id": 983,
+  "parent": 41,
+  "title": "Sherry",
+  "url": "/sherry/",
+  "order": 517
  }
 ]
