@@ -782,5 +782,82 @@
   "title": "Triple sec a Cointreau",
   "url": "/triple-sec/",
   "order": 416
+ },
+ {
+  "id": 991,
+  "parent": 31,
+  "title": "Aperol",
+  "url": "/aperol/",
+  "order": 417
+ },
+ {
+  "id": 992,
+  "parent": 31,
+  "title": "Campari a bitter",
+  "url": "/campari-a-bitter/",
+  "order": 418
+ },
+ {
+  "id": 993,
+  "parent": 31,
+  "title": "Baileys",
+  "url": "/baileys/",
+  "order": 419
+ },
+ {
+  "id": 994,
+  "parent": 31,
+  "title": "Sambuca",
+  "url": "/sambuca/",
+  "order": 420
+ },
+ {
+  "id": 995,
+  "parent": 41,
+  "title": "Vína z Itálie",
+  "url": "/vina-z-italie/",
+  "order": 520
+ },
+ {
+  "id": 996,
+  "parent": 41,
+  "title": "Vína ze Španělska",
+  "url": "/vina-ze-spanelska/",
+  "order": 521
+ },
+ {
+  "id": 997,
+  "parent": 41,
+  "title": "Vína z Francie",
+  "url": "/vina-z-francie/",
+  "order": 522
+ },
+ {
+  "id": 998,
+  "parent": 41,
+  "title": "Moravská vína",
+  "url": "/moravska-vina/",
+  "order": 523
+ },
+ {
+  "id": 999,
+  "parent": 41,
+  "title": "Chianti",
+  "url": "/chianti/",
+  "order": 524
+ },
+ {
+  "id": 1000,
+  "parent": 41,
+  "title": "Rioja",
+  "url": "/rioja/",
+  "order": 525
+ },
+ {
+  "id": 1001,
+  "parent": 41,
+  "title": "Oranžové víno",
+  "url": "/oranzove-vino/",
+  "order": 526
  }
 ]
