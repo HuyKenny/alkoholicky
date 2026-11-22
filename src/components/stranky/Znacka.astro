@@ -51,5 +51,11 @@ const m = v.meta;
 				{v.faq.map((f) => <details><summary>{f.q}</summary><div set:html={f.a} /></details>)}
 			</section>
 		)}
+		{v.page === 1 && !v.isFiltered && v.cd?.sim && v.cd.sim.length >= 3 && (
+			<section class="sek ah-podobne">
+				<h2>Podobné značky</h2>
+				<ul class="hero__q">{v.cd.sim.map((b) => <li><a href={`/znacka/${b.s}/`}>{decode(b.n)}</a></li>)}</ul>
+			</section>
+		)}
 	</Vypis>
 </Base>

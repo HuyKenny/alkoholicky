@@ -38,7 +38,7 @@ export async function collect(db: D1Database): Promise<Record<string, U[]>> {
   out['post-sitemap'] = map(posts);
   const pg = map(pages);
   const lastPost = latest(out['post-sitemap']!);
-  out['page-sitemap'] = [{ loc: BASE + '/', mod: latest([...pg, ...out['post-sitemap']!]) }, { loc: BASE + '/blog/', mod: lastPost }, ...pg];
+  out['page-sitemap'] = [{ loc: BASE + '/', mod: latest([...pg, ...out['post-sitemap']!]) }, { loc: BASE + '/blog/', mod: lastPost }, { loc: BASE + '/znacky/', mod: lastPost }, ...pg];
   // Rank Math numbers the files only when a type needs more than one (product_cat-sitemap.xml is registered in GSC)
   const chunk = (name: string, list: U[]) => {
     if (list.length <= PER_FILE) { if (list.length) out[name] = list; return; }

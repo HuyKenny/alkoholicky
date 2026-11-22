@@ -1,0 +1,35 @@
+---
+// /znacky/ - A-Z index of the brand pages (internal links to every brand with >= 3 products; before: 302 to the homepage)
+import Base from '../../layouts/Base.astro';
+import { brandList } from '../../lib/db';
+import { decode } from '../../lib/format';
+import { getEnv } from '../../lib/server/env';
+
+export const prerender = false;
+const SHOPISH = new Set(['warehouse-1']);
+const memo = await brandList(getEnv().DB);
+const brands = [...memo.bySlug.values()].filter((b) => b.count >= 3 && !b.slug.endsWith('-cz') && !SHOPISH.has(b.slug))
+	.map((b) => ({ slug: b.slug, name: decode(b.name), count: b.count }));
+const key = (n: string) => { const c = n.normalize('NFD').replace(/[̀-ͯ]/g, '').charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : '0–9'; };
+const groups = new Map<string, typeof brands>();
+for (const b of brands.sort((a, c) => a.name.localeCompare(c.name, 'cs'))) { const k = key(b.name); groups.set(k, [...(groups.get(k) ?? []), b]); }
+const letters = [...groups.keys()].sort((a, c) => (a === '0–9' ? -1 : c === '0–9' ? 1 : a.localeCompare(c)));
+const url = 'https://alkoholicky.cz/znacky/';
+const title = 'Značky alkoholu A–Z: porovnání cen | Alkoholický';
+const description = `Všechny značky alkoholu a nápojů od A do Z: ${brands.length} značek s porovnáním cen z více než 20 e-shopů. Whisky, rum, gin, vodka, pivo i víno.`;
+---
+<Base title={title} description={description} canonical={url} robots={['follow', 'index']} pageType="brand-index"
+	graph={[{ '@type': 'CollectionPage', '@id': url + '#webpage', url, name: title, isPartOf: { '@id': 'https://alkoholicky.cz/#website' } }]}>
+	<div class="w">
+		<nav class="crumbs" aria-label="Drobečková navigace"><a href="/">Domů</a> › <span>Značky</span></nav>
+		<h1>Značky alkoholu A–Z</h1>
+		<p class="intro">U každé značky porovnáme ceny z více než 20 e-shopů: nejlevnější lahev, cena za litr a největší slevy. Vyberte písmeno nebo kategorii.</p>
+		<ul class="hero__q">{letters.map((l) => <li><a href={`#znacky-${encodeURIComponent(l)}`}>{l}</a></li>)}</ul>
+		{letters.map((l) => (
+			<section class="sek" id={`znacky-${encodeURIComponent(l)}`}>
+				<h2>{l}</h2>
+				<ul class="hero__q">{groups.get(l)!.map((b) => <li><a href={`/znacka/${b.slug}/`}>{b.name}</a> ({b.count})</li>)}</ul>
+			</section>
+		))}
+	</div>
+</Base>

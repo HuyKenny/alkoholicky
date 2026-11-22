@@ -71,7 +71,8 @@ const ART: Record<string, string> = { 'rumy-a-ochucene-rumy': 'rum', 'whisky-a-o
   'vina': 'vin', 'pivo': 'piv', 'likery': 'liker', 'konaky-armanaky-a-vinovice': 'konak', 'slivovice-svestkovice': 'slivov', 'sumiva-a-perliva-vina': 'sumiv', 'absinthy': 'absint' };
 export interface CData { n: number; lo: number; med: number; hi: number; u?: string; cheapest: Array<{ s: string; n: string; p: number; d: string; k: number }>;
   ppl?: Array<{ s: string; n: string; p: number; d: string; k: number; l: number }>; ppl_med?: number; ppa?: Array<{ s: string; n: string; p: number; d: string; a: number }>;
-  shops: Array<{ d: string; n: number }>; deals: Array<{ s: string; n: string; p: number; d: string; x: number }>; top: Array<{ s: string; n: string; p: number; d: string; k: number }> }
+  shops: Array<{ d: string; n: number }>; deals: Array<{ s: string; n: string; p: number; d: string; x: number }>; top: Array<{ s: string; n: string; p: number; d: string; k: number }>;
+  sim?: Array<{ s: string; n: string }>; bt?: Array<{ s: string; n: string; c: number }> }
 
 export async function categoryView(db: D1Database, catId: number, page: number, sp: URLSearchParams, facet?: { fp: FacetPage; user: URLSearchParams }) {
   const [cat0, tree, fc, brands, imgs, cdRaw, lands] = await Promise.all([loadCategory(db, catId), catTree(db), facets(db, `f:${catId}`), brandList(db), catImages(db),
@@ -219,10 +220,27 @@ export async function brandView(db: D1Database, slug: string, page: number, sp: 
     lead = `<p class="lead"><strong>${bn}</strong>: porovnáváme ${cislo(cd.n)} ${produktu(cd.n)} z ${shopsN || '20+'} e-shopů, ceny od ${kcs(cd.lo)} (běžná cena ${kcs(cd.med)}).`
       + (c0 ? ` Nejlevnější: <a href="/${c0.s}/">${decode(short(c0.n))}</a> za ${kcs(c0.p)}${c0.d ? ' (' + shopName(c0.d) + ')' : ''}.` : '')
       + (cats.length ? ` Najdete je v kategoriích ${cats.map((c, i) => `${i ? ', ' : ''}<a href="/${c.s}/">${decode(c.n).toLowerCase()}</a> (${c.c})`).join('')}.` : '') + ` Ceny aktualizujeme každý den.</p>`;
-    dynTitle = [`${bn} cena od ${kcs(cd.lo)} – všechny druhy | Alkoholický`, `${bn} cena od ${kcs(cd.lo)} | Alkoholický`, `${bn} cena | Alkoholický`].find((t) => t.length <= 62) ?? '';
-    dynDesc = clamp(`${bn}: ${cislo(cd.n)} ${produktu(cd.n)} od ${kcs(cd.lo)}${c0 ? `, nejlevnější ${decode(short(c0.n))} za ${kcs(c0.p)}` : ''}. Porovnání cen z ${shopsN || '20+'} e-shopů, aktualizace denně.`, 158);
+    // "Bumbu rum", "Absolut vodka": people search brand + type; the type comes from the main category. The price in the title is the cheapest regular bottle
+    // (cd.cheapest skips miniatures), not the 0,05 l miniature (Baileys "od 65 Kč" vs. 336 Kč for 0,7 l).
+    const TYPE: Record<string, string> = { 'rumy-a-ochucene-rumy': 'rum', 'tmave-rumy': 'rum', 'bile-rumy': 'rum', 'korenene-rumy': 'rum', 'vodky-a-ochucene-vodky': 'vodka', 'giny': 'gin', 'whisky-a-ochucene-whisky': 'whisky',
+      'skotske-whisky': 'whisky', 'americke-whiskey': 'whiskey', 'irske-whiskey': 'whiskey', 'tequily': 'tequila', 'konaky': 'koňak', 'piva': 'pivo', 'pivo': 'pivo' };
+    const typeWord = cats[0] ? TYPE[cats[0].s] ?? '' : '';
+    const bnT = typeWord && !bn.toLowerCase().includes(typeWord) ? `${bn} ${typeWord}` : bn;
+    const from = c0 ? c0.p : cd.lo;
+    const sale = (cd.deals ?? []).reduce((m, d) => Math.max(m, d.x), 0);
+    const saleTxt = sale >= 10 ? ` – sleva až ${Math.round(sale)} %` : '';
+    dynTitle = [`${bnT} cena od ${kcs(from)}${saleTxt} | Alkoholický`, `${bnT} cena od ${kcs(from)} – všechny druhy | Alkoholický`, `${bnT} cena od ${kcs(from)} | Alkoholický`, `${bnT} cena | Alkoholický`, `${bn} cena | Alkoholický`].find((t) => t.length <= 62) ?? '';
+    dynDesc = clamp(`${bnT}: ${cislo(cd.n)} ${produktu(cd.n)} od ${kcs(from)}${sale >= 10 ? `, sleva až ${Math.round(sale)} %` : ''}${c0 ? `, nejlevnější ${decode(short(c0.n))} za ${kcs(c0.p)}` : ''}. Porovnání cen z ${shopsN || '20+'} e-shopů, aktualizace denně.`, 158);
+    // alcohol strength from the product names ("… 0,7l 40%"): answers "kolik procent alkoholu má {značka}" (a "People also ask" question for brand searches)
+    const abvs = (items as Array<{ name?: string }>).map((i) => Number((/(\d{1,2}(?:[.,]\d)?)\s*%/.exec(decode(i.name ?? ''))?.[1] ?? '0').replace(',', '.'))).filter((x) => x >= 1 && x <= 96);
+    const abvFaq = abvs.length >= 3 ? (() => {
+      const lo = Math.min(...abvs), hi = Math.max(...abvs); const freq = new Map<number, number>(); abvs.forEach((x) => freq.set(x, (freq.get(x) ?? 0) + 1));
+      const mode = [...freq.entries()].sort((a, c) => c[1] - a[1])[0]![0]; const f1 = (x: number) => String(x).replace('.', ',');
+      return { q: `Kolik procent alkoholu má ${bn}?`, a: lo === hi ? `Produkty ${bn} v našem srovnání mají ${f1(lo)} % alkoholu.` : `Nejčastěji ${f1(mode)} %, podle druhu od ${f1(lo)} do ${f1(hi)} %. Přesná síla je vždy v názvu a popisu konkrétní lahve.` };
+    })() : null;
     if (faq.length || cd.n >= 3) faq = [
       { q: `Kolik stojí ${bn}?`, a: `Ceny ${bn} začínají na ${kcs(cd.lo)}, běžná cena v našem srovnání je ${kcs(cd.med)}${cd.ppl_med ? ` (orientačně ${kcs(cd.ppl_med)} za litr)` : ''}. Konkrétní cena závisí na druhu, objemu a balení.` },
+      ...(abvFaq ? [abvFaq] : []),
       ...(c0 ? [{ q: `Kde koupit ${bn} nejlevněji?`, a: `Dnes je nejlevnější ${decode(short(c0.n))} za ${kcs(c0.p)}${c0.d ? ' v obchodě ' + shopName(c0.d) : ''}. U každého produktu vidíte všechny obchody seřazené podle ceny; nakupujete přímo u e-shopu, my ceny jen porovnáváme.` }] : []),
       ...faq];
   }
@@ -230,7 +248,7 @@ export async function brandView(db: D1Database, slug: string, page: number, sp: 
   const shopOffers = shopDomain && page === 1 && !filtered ? await db.prepare("SELECT o.go_slug, o.price, p.slug, p.name FROM offers o JOIN products p ON p.id = o.product_id WHERE o.domain = ? AND o.active = 1 AND p.status = 'publish' ORDER BY p.pop DESC LIMIT 8")
     .bind(shopDomain).all<{ go_slug: string; price: number; slug: string; name: string }>().then((r) => r.results).catch(() => [] as Array<{ go_slug: string; price: number; slug: string; name: string }>) : [];
   const meta: Meta = {
-    title: b.slug === 'karloff-tatratea-tatransky-caj' && cd && page === 1 && !filtered ? `Tatranský čaj cena od ${kcs(cd.lo)} – druhy 17–72 % | Alkoholický` : dynTitle && b.slug !== 'karloff-tatratea-tatransky-caj' ? dynTitle : title,
+    title: b.slug === 'karloff-tatratea-tatransky-caj' && cd && page === 1 && !filtered ? `Tatranský čaj cena od ${kcs(cd.cheapest[0]?.p ?? cd.lo)} – druhy 17–72 % | Alkoholický` : dynTitle && b.slug !== 'karloff-tatratea-tatransky-caj' ? dynTitle : title,
     description: dynDesc && !b.seo_desc ? dynDesc : descFrom(b.seo_desc, '', {}, brandSeo(b).desc, page),
     ...(thin || filtered ? {} : { canonical: url }), robots: filtered ? ['noindex', 'follow'] : robots(thin),
     ...(page > 1 && !filtered ? { prev: abs(pagePath(base, page - 1)) } : {}),

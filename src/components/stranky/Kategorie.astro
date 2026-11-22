@@ -78,6 +78,12 @@ const top = first ? v.items.slice(0, 8) : [];
 				<ul class="hero__q">{v.picks.map((c) => <li><a href={`/${c.slug}/`}>{decode(c.h1)}</a></li>)}</ul>
 			</section>
 		)}
+		{cd && cd.bt && cd.bt.length >= 4 && (
+			<section class="sek ah-znacky">
+				<h2>Oblíbené značky: {name}</h2>
+				<ul class="hero__q">{cd.bt.map((b) => <li><a href={`/znacka/${b.s}/`}>{decode(b.n)}</a> ({b.c})</li>)}</ul>
+			</section>
+		)}
 		{v.guide && <section class="sek txt ah-guide" set:html={v.guide} />}
 		{v.faq.length > 0 && (
 			<section class="sek faq ah-faq">
