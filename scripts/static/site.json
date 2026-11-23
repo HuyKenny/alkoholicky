@@ -1,0 +1,16 @@
+{
+ "domain": "alkoholicky.cz",
+ "worker": "alkoholicky",
+ "port": 8821,
+ "cron": "40 0 * * *",
+ "go": "go_slug",
+ "import": [["pnpm", "exec", "tsx", "scripts/static/run-worker.ts", "--db", "{db}",
+             "--run", "ALK_PRODUCTION_APPROVED=yes python3 scripts/katalog-novinky.py --apply",
+             "--tick", "--finalize"]],
+ "crawl": {"workers": 4, "extra_until": 0, "no_go": true, "skip": [], "exits": "/go/"},
+ "fts": ["INSERT INTO product_fts (rowid, name, brand) SELECT p.id, p.name, COALESCE(b.name, '') FROM products p LEFT JOIN brands b ON b.id = p.brand_id"],
+ "min_pages": 5000,
+ "smoke_paths": ["/whisky/", "/znacky/"],
+ "actions": {"repo": "HuyKenny/alkoholicky", "cred": ".alkoholicky-credentials.env", "zone": "alkoholicky.cz",
+             "secrets": {}, "feeds_ce": ".alkoholicky-feeds.json"}
+}

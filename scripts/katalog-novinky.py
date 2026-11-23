@@ -40,7 +40,7 @@ FEEDS = {1: "heureka", 11: "heureka", 3: "heureka", 2: "heureka", 4: "heureka", 
          7: "heureka", 9: "heureka", 13: "heureka", 14: "heureka", 15: "heureka", 17: "heureka", 18: "heureka", 16: "google", 20: "google", 21: "google"}
 DOMAIN = {1: "alkohol.cz", 11: "dramroom.cz", 3: "svetnapoju.cz", 2: "drinkcentrum.cz", 19: "4bar.cz", 4: "topalkohol.cz", 10: "warehouse1.cz", 12: "lihovarek.cz", 8: "barman.cz",
           5: "vinisto.cz", 7: "vinokral.cz", 9: "ocenenavina.cz", 13: "osobnivinoteka.cz", 14: "panalfred.cz", 15: "wineplanet.cz", 17: "donpealo.cz", 18: "destilerka.cz", 16: "simplywines.cz", 20: "alza.cz", 21: "1er.cz"}
-GUARD = 500  # more new products in one run = something is wrong (unless --first-fill)
+GUARD = int(os.environ.get("KATALOG_GUARD") or 500)  # more new products in one run = something is wrong (unless --first-fill)
 
 args = sys.argv[1:]
 opt = lambda k, d=None: args[args.index(k) + 1] if k in args else d
@@ -53,6 +53,8 @@ LIMIT = int(opt("--limit", "0"))
 
 def creds(name):
     e = {}
+    if not (ROOT / "credentials" / name).exists():   # GitHub Actions (static build): no credentials dir
+        return e
     for line in open(ROOT / "credentials" / name):
         line = line.strip()
         if "=" in line and not line.startswith("#"):
@@ -62,11 +64,18 @@ def creds(name):
 
 
 CF, ER = creds(".cloudflare-credentials.env"), creds(".alkoholicky-credentials.env")
-WENV = {**os.environ, "PATH": f"{NODE}:{os.environ.get('PATH', '')}", "CLOUDFLARE_EMAIL": CF["CF_EMAIL"],
-        "CLOUDFLARE_API_KEY": CF["CF_GLOBAL_API_KEY"], "CLOUDFLARE_ACCOUNT_ID": ER["CF_ACCOUNT_ID"]}
+WENV = {**os.environ, "PATH": f"{NODE}:{os.environ.get('PATH', '')}", "CLOUDFLARE_EMAIL": CF.get("CF_EMAIL", ""),
+        "CLOUDFLARE_API_KEY": CF.get("CF_GLOBAL_API_KEY", ""), "CLOUDFLARE_ACCOUNT_ID": ER.get("CF_ACCOUNT_ID", "")}
+STATIC_DB = os.environ.get("STATIC_DB")  # static build: the local SQLite state instead of the (deleted) production D1
+REP_DIR = Path(os.environ["STATIC_REPORTS"]) if os.environ.get("STATIC_REPORTS") else ROOT / "reports/alkoholicky"
+TMP_DIR = Path(os.environ["STATIC_REPORTS"]) if os.environ.get("STATIC_REPORTS") else ROOT / "tmp"
 
 
 def d1(sql=None, file=None):
+    if STATIC_DB:
+        sys.path.insert(0, str(Path(__file__).resolve().parent / "static"))
+        import d1local
+        return d1local.query(sql) if sql else d1local.run_file(file)
     cmd = ["npx", "wrangler", "d1", "execute", "DB", "--env", ENV, "--remote", "--json", "-y"] + (["--command", sql] if sql else ["--file", file])
     for attempt in range(4):
         r = subprocess.run(cmd, cwd=APP, env=WENV, capture_output=True, text=True)
@@ -283,9 +292,12 @@ def load_feed(n, path):
 
 
 def fetch_feeds():
-    urls = json.load(open(ROOT / "credentials/.alkoholicky-feeds.json"))["feeds"]
+    if os.environ.get("FEED_URLS_JSON"):   # static build (GitHub secret): {"FEED_URL_<n>": url}
+        urls = {f"Feed__{k.split('_')[-1]}": {"feed_url": v} for k, v in json.loads(os.environ["FEED_URLS_JSON"]).items()}
+    else:
+        urls = json.load(open(ROOT / "credentials/.alkoholicky-feeds.json"))["feeds"]
     out = {}
-    tmp = Path(OFFLINE) if OFFLINE else Path(tempfile.mkdtemp(prefix="alkoholicky-katalog-", dir=ROOT / "tmp"))
+    tmp = Path(OFFLINE) if OFFLINE else Path(tempfile.mkdtemp(prefix="alkoholicky-katalog-", dir=ROOT / "tmp" if (ROOT / "tmp").is_dir() else None))
     for n in FEEDS:
         if ONLY and n not in ONLY:
             continue
@@ -643,7 +655,7 @@ def main():
 
     # 6. report
     day = datetime.now().strftime("%Y-%m-%d")
-    rep = ROOT / f"reports/alkoholicky/katalog-novinky-{day}.md"
+    rep = REP_DIR / f"katalog-novinky-{day}.md"
     per_feed = Counter(cl[0]["feed"] for cl, _ in created)
     per_cat = Counter(c["slug"] for _, c in created)
     lines = [f"# alkoholicky.cz — nové produkty z feedů ({day}, {'APPLY ' + ENV if APPLY else 'dry run ' + ENV})", "",
@@ -664,12 +676,12 @@ def main():
             if path.startswith("(missing"):
                 continue
             sug[path] = dict(n=cnt, guess=suggest(path.split("  ::  ")[0], cats))
-        (ROOT / "tmp/alkoholicky-katalog-navrh-mapy.json").write_text(json.dumps(sug, ensure_ascii=False, indent=1))
+        (TMP_DIR / "alkoholicky-katalog-navrh-mapy.json").write_text(json.dumps(sug, ensure_ascii=False, indent=1))
         print(f"suggestions: {len(sug)} paths → tmp/alkoholicky-katalog-navrh-mapy.json")
     random.seed(7)
     sm = random.sample(sample, min(200, len(sample)))
-    (ROOT / "tmp/alkoholicky-katalog-vzorek.json").write_text(json.dumps(sm, ensure_ascii=False))
-    (ROOT / "tmp/alkoholicky-katalog-vse.json").write_text(json.dumps(sample, ensure_ascii=False))
+    (TMP_DIR / "alkoholicky-katalog-vzorek.json").write_text(json.dumps(sm, ensure_ascii=False))
+    (TMP_DIR / "alkoholicky-katalog-vse.json").write_text(json.dumps(sample, ensure_ascii=False))
     print("\n".join(lines[:8]))
     print(f"report: {rep}")
 
@@ -679,7 +691,7 @@ def main():
         raise SystemExit("production needs ALK_PRODUCTION_APPROVED=yes")
     if len(created) > GUARD and "--first-fill" not in args:
         raise SystemExit(f"guard: {len(created)} new products > {GUARD} — check the report, rerun with --first-fill")
-    tmpd = Path(tempfile.mkdtemp(prefix="alkoholicky-katalog-sql-", dir=ROOT / "tmp"))
+    tmpd = Path(tempfile.mkdtemp(prefix="alkoholicky-katalog-sql-", dir=ROOT / "tmp" if (ROOT / "tmp").is_dir() else None))
     chunk, part = [], 0
     for st in sql + [None]:
         # flush before a new product (or brand/key/update) once the batch is big, never inside one product's rows
