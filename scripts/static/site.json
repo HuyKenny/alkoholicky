@@ -14,6 +14,7 @@
    "{db}",
    "--run",
    "ALK_PRODUCTION_APPROVED=yes python3 scripts/katalog-novinky.py --apply",
+   "--all-due",
    "--tick",
    "--finalize"
   ]
