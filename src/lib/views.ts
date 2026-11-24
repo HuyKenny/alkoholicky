@@ -164,8 +164,18 @@ export async function categoryView(db: D1Database, catId: number, page: number, 
   return {
     meta, cat, crumbs, items, total, page, pages, base, f, qs: toQuery(fp ? parseFilters(facet!.user) : f), kids, kidsTitle, tree, fc, brands, imgs, landings, faq, gift, picks, h1, subtitle, lead, cd, articles, shopsN,
     guide: page === 1 && !filtered ? cat.guide_html : '',
+    /** facet landing: its preset filter (the client-side filters start from it) */
+    preset: fp?.qs ?? '',
     isFiltered: filtered,
   };
+}
+
+/** Facet landings of a category (facet_pages): filter value → landing slug, for the static data files (lib/staticdata.ts). */
+export async function listingLandings(db: D1Database, catId: number): Promise<Record<string, string>> {
+  const lands = await db.prepare('SELECT * FROM facet_pages WHERE noindex = 0 AND total >= min_products AND base_slug = (SELECT slug FROM categories WHERE id = ?)').bind(catId).all<FacetPage>().then((r) => r.results).catch(() => [] as FacetPage[]);
+  const landings: Record<string, string> = {};
+  for (const l of lands) { const k = only(parseFilters(new URLSearchParams(l.qs))); if (k) landings[k] = l.slug; }
+  return landings;
 }
 
 /** `key=value` when the filter state is a single brand or a single parameter value and nothing else, else null. */
