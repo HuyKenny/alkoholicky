@@ -12,7 +12,7 @@ const DEFAULT_ALLOWED_HOSTS = [
   'anrdoezrs.net', 'jdoqocy.com', 'tkqlhce.com', 'dpbolvw.net', 'kqzyfj.com',
   'alkohol.cz', 'drinkcentrum.cz', 'svetnapoju.cz', 'topalkohol.cz', 'vinisto.cz', 'vinokral.cz', 'barman.cz', 'ocenenavina.cz',
   'warehouse1.cz', 'dramroom.cz', 'lihovarek.cz', 'osobnivinoteka.cz', 'panalfred.cz', 'wineplanet.cz', 'simplywines.cz',
-  'donpealo.cz', 'destilerka.cz', '4bar.cz', 'alza.cz', 'rjelinek.cz', 'rohlik.cz', 'babickarstvi.cz', 'bottlesandstories.cz', 'familium.cz',
+  'donpealo.cz', 'destilerka.cz', '4bar.cz', 'alza.cz', 'rjelinek.cz', 'babickarstvi.cz', 'bottlesandstories.cz', 'familium.cz',
 ];
 
 function isSafeTarget(url: unknown, extra = ''): url is string {

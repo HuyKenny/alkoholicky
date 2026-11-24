@@ -6,7 +6,7 @@ const NAMES: Record<string, string> = {
   'vinisto.cz': 'Vinisto', 'vinokral.cz': 'Vínokrál', 'barman.cz': 'Barman.cz', 'ocenenavina.cz': 'Oceněná vína', 'warehouse1.cz': 'Warehouse #1',
   'dramroom.cz': 'DramRoom', 'lihovarek.cz': 'Lihovárek', 'osobnivinoteka.cz': 'Osobní vinotéka', 'panalfred.cz': 'Pan Alfred',
   'wineplanet.cz': 'Wineplanet', 'simplywines.cz': 'SimplyWines', 'donpealo.cz': 'Don Pealo', 'destilerka.cz': 'Destilérka', '4bar.cz': '4bar',
-  'alza.cz': 'Alza.cz', 'rohlik.cz': 'Rohlík.cz', 'rjelinek.cz': 'R. Jelínek', 'babickarstvi.cz': 'Babičkářství', 'bottlesandstories.cz': 'Bottles & Stories',
+  'alza.cz': 'Alza.cz', 'rjelinek.cz': 'R. Jelínek', 'babickarstvi.cz': 'Babičkářství', 'bottlesandstories.cz': 'Bottles & Stories',
   'familium.cz': 'Familium', 'bestdrink.cz': 'Bestdrink',
 };
 export const shopName = (domain: string) => NAMES[domain] ?? domain;
@@ -15,7 +15,7 @@ const COLORS: Record<string, string> = {
   'alkohol.cz': '#B3122E', 'drinkcentrum.cz': '#E30613', 'svetnapoju.cz': '#00A0E3', 'topalkohol.cz': '#1D1D1B', 'vinisto.cz': '#7A1F3D',
   'vinokral.cz': '#8E1B3C', 'barman.cz': '#C8102E', 'ocenenavina.cz': '#B08D57', 'warehouse1.cz': '#1F1F1F', 'dramroom.cz': '#C49A3A',
   'lihovarek.cz': '#2F6B3A', 'osobnivinoteka.cz': '#6B2142', 'panalfred.cz': '#0E2A47', 'wineplanet.cz': '#5B2A86', 'simplywines.cz': '#D4145A',
-  'donpealo.cz': '#E2001A', 'destilerka.cz': '#A0522D', '4bar.cz': '#F39200', 'alza.cz': '#21A1E1', 'rohlik.cz': '#5DA130',
+  'donpealo.cz': '#E2001A', 'destilerka.cz': '#A0522D', '4bar.cz': '#F39200', 'alza.cz': '#21A1E1',
 };
 export const shopColor = (domain: string) => COLORS[domain] ?? '#0F4D3A';
 export const shopIcon = (domain: string) => `/wp-content/uploads/ce-logos/icon_${domain.replace(/\./g, '-')}.png`;
