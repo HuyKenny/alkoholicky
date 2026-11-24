@@ -21,8 +21,8 @@ export const FEEDS: FeedDef[] = [
   { id: 3, name: 'Svět nápojů', domain: 'svetnapoju.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=6aa48880&desturl=', tracking: '' },
   { id: 4, name: 'Topalkohol', domain: 'topalkohol.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=3e59749f&desturl=', tracking: '' },
   { id: 5, name: 'Vinisto', domain: 'vinisto.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=bcd94e84&desturl=', tracking: '',
-    // Kenny 25. 11. 2026: no food (Potraviny a delikatesy: jerky, chips, olives...), only alcohol, coffee and accessories
-    skipCategory: (c) => { const t = c.split('|').map((x) => x.trim()); return t.includes('Potraviny a delikatesy') && !t.includes('Alkoholické nápoje'); } },
+    // Kenny 25. 11. 2026: only alcohol, beer and soft drinks (+ coffee): no food, cosmetics, glasses, bags, T-shirts, tastings
+    skipCategory: (c) => { const t = new Set(c.split('|').map((x) => x.trim())); return !t.has('Alkoholické nápoje') && ['Potraviny a delikatesy', 'Sety potravin a delikates', 'Kosmetika a osobní péče', 'Doplňky k vínu', 'Sklenice na víno', 'Tašky v akci', 'Degustace vína v Praze', 'Domácnost a kuchyně'].some((x) => t.has(x)); } },
   { id: 7, name: 'Vínokrál', domain: 'vinokral.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=62cbd446&desturl=', tracking: '' },
   { id: 8, name: 'Barman', domain: 'barman.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=6caa871c&desturl=', tracking: '' },
   { id: 9, name: 'Oceněná vína', domain: 'ocenenavina.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=c887d0ca&desturl=', tracking: '' },
