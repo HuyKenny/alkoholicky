@@ -164,6 +164,7 @@ export async function runFeed(env: Env, f: FeedDef, opts: { force?: boolean } = 
   try {
     for await (const node of parseXmlItems(decodeXmlStream(body, { maxBytes: 600_000_000 }), f.format === 'google' ? 'item' : 'SHOPITEM')) {
       res.read++;
+      if (f.skipCategory && f.skipCategory(node.children.find((c) => c.name === 'CATEGORYTEXT')?.text ?? '')) continue;
       const it = parseItem(f, node);
       if (it && !items.has(it.uid)) items.set(it.uid, it);
     }

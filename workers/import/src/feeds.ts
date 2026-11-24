@@ -11,6 +11,8 @@ export interface FeedDef {
   tracking: string;
   /** false = feed not imported and its offers hidden (finalizeDay). Re-enable = set true + deploy. */
   enabled?: boolean;
+  /** items whose feed CATEGORYTEXT matches are not imported (e.g. food); their existing offers go inactive like any item that left the feed */
+  skipCategory?: (categoryText: string) => boolean;
 }
 
 export const FEEDS: FeedDef[] = [
@@ -18,7 +20,9 @@ export const FEEDS: FeedDef[] = [
   { id: 2, name: 'DrinkCentrum', domain: 'drinkcentrum.cz', format: 'heureka', deeplink: 'https://login.affial.com/scripts/8m338kc?a_aid=637035ea64181&a_bid=85cce787&desturl=', tracking: '' },
   { id: 3, name: 'Svět nápojů', domain: 'svetnapoju.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=6aa48880&desturl=', tracking: '' },
   { id: 4, name: 'Topalkohol', domain: 'topalkohol.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=3e59749f&desturl=', tracking: '' },
-  { id: 5, name: 'Vinisto', domain: 'vinisto.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=bcd94e84&desturl=', tracking: '' },
+  { id: 5, name: 'Vinisto', domain: 'vinisto.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=bcd94e84&desturl=', tracking: '',
+    // Kenny 25. 11. 2026: no food (Potraviny a delikatesy: jerky, chips, olives...), only alcohol, coffee and accessories
+    skipCategory: (c) => { const t = c.split('|').map((x) => x.trim()); return t.includes('Potraviny a delikatesy') && !t.includes('Alkoholické nápoje'); } },
   { id: 7, name: 'Vínokrál', domain: 'vinokral.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=62cbd446&desturl=', tracking: '' },
   { id: 8, name: 'Barman', domain: 'barman.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=6caa871c&desturl=', tracking: '' },
   { id: 9, name: 'Oceněná vína', domain: 'ocenenavina.cz', format: 'heureka', deeplink: 'https://ehub.cz/system/scripts/click.php?a_aid=052443b7&a_bid=c887d0ca&desturl=', tracking: '' },
